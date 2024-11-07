@@ -2,6 +2,14 @@ name: Manual Trigger Workflow
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: "production"
+      version:
+        description: "Application version"
+        required: true
 
 jobs:
   build:
