@@ -17,7 +17,7 @@ jobs:
     needs: list_projects
     strategy:
       matrix:
-        project: ${{ fromJson(env.projects | replace(',', '","')) }}
+        project: ${{ fromJson(env.projects }}
         zone: [e1, e2]
 
     steps:
