@@ -5,22 +5,19 @@ on: workflow_dispatch
 jobs:
   list_projects:
     runs-on: ubuntu-latest
-    outputs:
-      projects: ${{ steps.set-matrix.outputs.projects }}
 
     steps:
       - name: Define Projects Variable
         id: set-matrix
         run: |
-          file='["amp1","amp2","amp3","amp4"]'
-          echo "::set-output name=projects::$file"
+          echo "projects=['amp1','amp2','amp3','amp4']" >> $GITHUB_ENV
 
   Health_pod_check:
     runs-on: ubuntu-latest
     needs: list_projects
     strategy:
       matrix:
-        project: ${{ fromJson(needs.list_projects.outputs.projects) }}
+        project: ${{ fromJson(env.projects) }}
         zone: [e1, e2]
 
     steps:
