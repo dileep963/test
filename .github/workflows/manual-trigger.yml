@@ -27,3 +27,6 @@ jobs:
       - name: Print Project and Zone
         run: |
           echo "Project: ${{ matrix.project }} | Zone: ${{ matrix.zone }}"
+          echo " ${{ matrix.project }}_${{ matrix.zone }} is creating the file" >> ${{ matrix.project }}_${{ matrix.zone }}.json
+           echo " ***************************************************** "
+           cat ${{ matrix.project }}_${{ matrix.zone }}.json
