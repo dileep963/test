@@ -20,7 +20,7 @@ jobs:
     needs: define-matrix
     strategy:
       matrix:
-        project: ${{ fromJson('["' + replace(needs.define-matrix.outputs.projects, ',', '","') + '"]') }}
+        project: ${{ fromJson(format('["{0}"]', join(needs.define-matrix.outputs.projects, '","'))) }}
         zone: [e1, e2]
 
     steps:
