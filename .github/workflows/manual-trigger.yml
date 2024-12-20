@@ -6,23 +6,23 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      projects: ${{ steps.set-matrix.outputs.projects }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
 
     steps:
       - name: Define Matrix Without jq
         id: set-matrix
         run: |
-          # Dynamically define the projects list (this is a string, not a JSON array)
-          projects="amp,amp1"
-          echo "::set-output name=projects::$projects"
+          # Create the matrix for project
+          matrix='[{"project":"amp"},{"project":"amp1"}]'
+          echo "::set-output name=matrix::$matrix"
 
   run-parallel:
     runs-on: ubuntu-latest
     needs: define-matrix
     strategy:
       matrix:
-        project: ${{ fromJson('["' + needs.define-matrix.outputs.projects.replace(',', '","') + '"]') }}
-        zone: [e1, e2]  # Static zone values
+        project: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
+        zone: [e1, e2]  # Static zone values, as dynamic zones in matrix aren't supported
 
     steps:
       - name: Print Project and Zone
