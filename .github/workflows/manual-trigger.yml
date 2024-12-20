@@ -12,15 +12,15 @@ jobs:
       - name: Define Projects Variable
         id: set-matrix
         run: |
-          projects="amp,amp1"
-          echo "::set-output name=projects::$projects"
+          file="amp1,amp2,amp3,amp4"
+          echo "::set-output name=projects::$file"
 
   run-parallel:
     runs-on: ubuntu-latest
     needs: define-matrix
     strategy:
       matrix:
-        project: ${{ fromJson('["' + needs.define-matrix.outputs.projects.replace(',', '","') + '"]') }}
+        project: ${{ fromJson('["' + replace(needs.define-matrix.outputs.projects, ',', '","') + '"]') }}
         zone: [e1, e2]
 
     steps:
