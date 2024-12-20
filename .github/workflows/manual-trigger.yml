@@ -30,7 +30,6 @@ jobs:
           echo " ${{ matrix.project }}_${{ matrix.zone }} is creating the file" >> ${{ matrix.project }}_${{ matrix.zone }}.json
            echo " ***************************************************** "
            cat ${{ matrix.project }}_${{ matrix.zone }}.json
-            - name: Upload JSON File as Artifact
 
       - name: Upload JSON File as Artifact-${{ matrix.project }}_${{ matrix.zone }}.json
         uses: actions/upload-artifact@v3
