@@ -46,7 +46,7 @@ jobs:
       - name: Download JSON Artifact
         uses: actions/download-artifact@v3
         with:
-          name: my-custom-json-file
+          name: healthcheck
           path: ./
 
       - name: Publish JSON Contents
