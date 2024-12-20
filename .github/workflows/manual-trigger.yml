@@ -3,7 +3,7 @@ name: Parallel Jobs Example
 on: workflow_dispatch
 
 jobs:
-  define-matrix:
+  list_projects:
     runs-on: ubuntu-latest
     outputs:
       projects: ${{ steps.set-matrix.outputs.projects }}
@@ -15,12 +15,12 @@ jobs:
           file='["amp1","amp2","amp3","amp4"]'
           echo "::set-output name=projects::$file"
 
-  run-parallel:
+  Health_pod_check:
     runs-on: ubuntu-latest
-    needs: define-matrix
+    needs: list_projects
     strategy:
       matrix:
-        project: ${{ fromJson(needs.define-matrix.outputs.projects) }}
+        project: ${{ fromJson(needs.list_projects.outputs.projects) }}
         zone: [e1, e2]
 
     steps:
@@ -34,5 +34,28 @@ jobs:
       - name: Upload JSON File as Artifact-${{ matrix.project }}_${{ matrix.zone }}.json
         uses: actions/upload-artifact@v3
         with:
-          name: my-custom-json-file
+          name: healthcheck
           path: ./${{ matrix.project }}_${{ matrix.zone }}.json
+
+
+  download-and-publish-json:
+    runs-on: ubuntu-latest
+    needs: Health_pod_check
+
+    steps:
+      - name: Download JSON Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: my-custom-json-file
+          path: ./
+
+      - name: Publish JSON Contents
+        run: |
+          echo "Publishing the following JSON file content:"
+          pwd
+          ls -latr
+          cd healthcheck
+          ls -latr
+          pwd
+          
+          
