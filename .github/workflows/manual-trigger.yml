@@ -6,21 +6,21 @@ jobs:
   define-matrix:
     runs-on: ubuntu-latest
     outputs:
-      projects: ${{ steps.set-matrix.outputs.projects }}  # Define output for matrix
+      projects: ${{ steps.set-matrix.outputs.projects }}  # Declare output for matrix
 
     steps:
       - name: Define Projects List
         id: set-matrix
         run: |
           projects='["amp1","amp2","amp3","amp4"]'
-          echo "PROJECTS=$projects" >> $GITHUB_ENV  # Write to GITHUB_ENV instead of using set-output
+          echo "projects=$projects" >> $GITHUB_OUTPUT  # Set output using GITHUB_OUTPUT
 
   run-parallel:
     runs-on: ubuntu-latest
-    needs: define-matrix
+    needs: define-matrix  # Make sure this job runs after 'define-matrix'
     strategy:
       matrix:
-        project: ${{ fromJson(needs.define-matrix.outputs.projects) }}  # Use job output for matrix
+        project: ${{ fromJson(needs.define-matrix.outputs.projects) }}  # Parse output using fromJson
         zone: [e1, e2]
 
     steps:
