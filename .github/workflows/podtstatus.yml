@@ -5,7 +5,7 @@ on:
 
 jobs:
   e1zone:
-    uses: dileep963/test/.github/workflows/zones.yml
+    uses: dileep963/test/.github/workflows/zones.yml@main
     secrets: inherit
     with:
       zoneslist: "e1a"  # Pass zoneslist as a string
