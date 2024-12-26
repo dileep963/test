@@ -8,7 +8,7 @@ on:
         required: true
       zone_level:
         description: 'The level of the zone'
-        required: false
+        required: true
 
 jobs:
   list_projects:
