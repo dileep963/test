@@ -1,12 +1,32 @@
-name: Pods_Status
+name: Main Workflow - Trigger Reusable
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
-  e1zone:
-    uses: dileep963/test/.github/workflows/zones.yml@main
-    secrets: inherit
-    with:
-      zoneslist: "e1a"
-      zone_level: "e1"
+  define-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.set-matrix.outputs.projects }}
+
+    steps:
+      - name: Define Projects List
+        id: set-matrix
+        run: |
+          projects='["amp1","amp2","amp3","amp4"]'
+          echo "projects=$projects" >> $GITHUB_OUTPUT
+
+  trigger-reusable:
+    runs-on: ubuntu-latest
+    needs: define-matrix
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.define-matrix.outputs.projects) }}
+        zone: [e1, e2]
+
+    steps:
+      - name: Call Reusable Workflow
+        uses: ./.github/workflows/reusable-create-json.yml
+        with:
+          project: ${{ matrix.project }}
+          zone: ${{ matrix.zone }}
