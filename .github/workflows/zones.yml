@@ -1,36 +1,26 @@
-name: Zones Workflow
+name: Reusable Workflow - Create JSON Files
 
 on:
   workflow_call:
     inputs:
-      zoneslist:
-        description: 'The list of zones'
+      project:
+        description: "The project name"
         required: true
-      zone_level:
-        description: 'The level of the zone'
+        type: string
+      zone:
+        description: "The zone name"
         required: true
+        type: string
 
 jobs:
-  list_projects:
-    runs-on: aexp-ubuntu-latest-medium
-    outputs:
-      projects: ${{ steps.set-matrix.outputs.projects }}
-    steps:
-      - name: Define Projects Variable
-        id: set-matrix
-        run: |
-          file='["amp-pos", "amp-nonpos"]'
-          echo "projects=$file" >> $GITHUB_OUTPUT
-         
-  Health_pod_check:
+  create-json:
     runs-on: ubuntu-latest
-    needs: list_projects
-    strategy:
-      matrix:
-        project: ${{ fromJson(needs.list_projects.outputs.projects) }}
-        zone: ${{ inputs.zoneslist }}
+
     steps:
-      - name: Check Pod Health
+      - name: Print Project and Zone
         run: |
-          echo "Checking health for project: ${{ matrix.project }} in zone: ${{ matrix.zone }}"
-          # Add your logic for pod health checks
+          echo "Project: ${{ inputs.project }} | Zone: ${{ inputs.zone }}"
+          echo "{ \"project\": \"${{ inputs.project }}\", \"zone\": \"${{ inputs.zone }}\" }" > ${{ inputs.project }}_${{ inputs.zone }}.json
+          echo "Created file: ${{ inputs.project }}_${{ inputs.zone }}.json"
+          echo "*****************************************************"
+          cat ${{ inputs.project }}_${{ inputs.zone }}.json
