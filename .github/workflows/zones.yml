@@ -9,8 +9,6 @@ on:
       zone_level:
         description: 'The level of the zone'
         required: false
-        default: 'level1'
-    type: workflow 
 
 jobs:
   list_projects:
@@ -30,7 +28,7 @@ jobs:
     strategy:
       matrix:
         project: ${{ fromJson(needs.list_projects.outputs.projects) }}
-        zone: {{ inputs.zoneslist }}
+        zone: ${{ inputs.zoneslist }}
     steps:
       - name: Check Pod Health
         run: |
