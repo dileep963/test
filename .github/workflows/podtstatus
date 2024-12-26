@@ -1,0 +1,12 @@
+name: Pods_Status
+
+on:
+  workflow_dispatch:  # Triggered manually
+
+jobs:
+  e1zone:
+    uses: dileep963/test/.github/workflows/zones.yml
+    secrets: inherit
+    with:
+      zoneslist: "e1a"  # Pass zoneslist as a string
+      zone_level: "e1"  # Pass zone_level as a string
