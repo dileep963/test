@@ -26,7 +26,8 @@ jobs:
 
     steps:
       - name: Call Reusable Workflow
-        uses: ./.github/workflows/reusable-create-json.yml
+        uses: dileep963/test@main  # Replace with your repository and branch
         with:
+          workflow: .github/workflows/reusable-create-json.yml  # Path to the reusable workflow
           project: ${{ matrix.project }}
           zone: ${{ matrix.zone }}
