@@ -1,6 +1,14 @@
 name: Parallel Jobs Example
 
-on: workflow_dispatch
+on: 
+  schedule:
+    - cron: '*/1 * * * *'
+
+  workflow_dispatch:
+
+
+
+
 
 jobs:
   define-matrix:
