@@ -1,7 +1,7 @@
 name: Parallel Jobs Example
 
 on: 
-  schedule:
+  #schedule:
     #- cron: '*/15 * * * *'
 
   workflow_dispatch:
