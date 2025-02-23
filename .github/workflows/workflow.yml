@@ -21,7 +21,7 @@ jobs:
               echo "[" > final.json
               RUNS_API="https://api.github.com/api/v3/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
               JOBS_API="https://api.github.com/api/v3/repos/dileep963/test/actions/runs"
-              workflow_runs=$(curl -s -L -H "Authorization: Bearer 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" "$RUNS_API")
+              workflow_runs=$(curl -s -L -H "Authorization: Bearer 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" "$RUNS_API")
               echo "$workflow_runs"
               echo "$workflow_runs" | jq -r '.workflow_runs[].id' | tr -d '\r'  >> id.txt
               cat id.txt
@@ -33,7 +33,7 @@ jobs:
                 if [ "$counter" -gt 1 ]; then
                 echo "," >> final.json
                 fi
-              curl -s -L -H "Authorization: Bearer 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" "$JOBS_API/$RUN_ID/jobs" >> final.json
+              curl -s -L -H "Authorization: Bearer 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" "$JOBS_API/$RUN_ID/jobs" >> final.json
               ((counter++))
               echo "Jobs for run ID $RUN_ID appended to final.json"
               done
