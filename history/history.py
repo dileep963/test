@@ -9,12 +9,12 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 RUNS_API = os.getenv("RUNS_API")
 JOBS_API = os.getenv("JOBS_API")
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")
-DURATION = os.getenv("DURATION", "1w")
+DURATION = os.getenv("DURATION", "1 week")
 
 # Function to calculate the date range based on the duration
 def calculate_date_range(duration):
     today = datetime.today()
-    
+
     # Use regular expression to identify the duration type
     match = re.match(r"(\d+)([a-zA-Z]+)", duration)
     if not match:
@@ -52,18 +52,12 @@ headers = {
 }
 
 def fetch_workflow_runs():
-    """Fetch workflow runs within the specified date range."""
-    runs_url = f"{RUNS_API}?created[gte]={START_DATE}&created[lte]={END_DATE}"
-    response = requests.get(runs_url, headers=headers)
-    
-    # Debugging prints
+    """Fetch workflow runs within the specified date range using the range format."""
+    runs_url = f"{RUNS_API}?per_page=5&created={START_DATE}..{END_DATE}"
     print(f"Querying URL: {runs_url}")
-    print(f"Response Status: {response.status_code}")
-    
+    response = requests.get(runs_url, headers=headers)
     if response.status_code == 200:
-        data = response.json()
-        print(f"Fetched Workflow Runs: {data}")
-        return data.get("workflow_runs", [])
+        return response.json().get("workflow_runs", [])
     else:
         print(f"Error fetching workflow runs: {response.status_code} {response.text}")
         return []
@@ -71,11 +65,6 @@ def fetch_workflow_runs():
 def fetch_jobs_for_run(run_id):
     """Fetch jobs for a given workflow run ID."""
     response = requests.get(f"{JOBS_API}/{run_id}/jobs", headers=headers)
-    
-    # Debugging prints
-    print(f"Fetching jobs for run ID: {run_id}")
-    print(f"Response Status: {response.status_code}")
-    
     if response.status_code == 200:
         return response.json()
     else:
@@ -85,9 +74,13 @@ def fetch_jobs_for_run(run_id):
 def main():
     """Main function to fetch jobs from workflow runs."""
     workflow_runs = fetch_workflow_runs()
-    run_ids = [run["id"] for run in workflow_runs]
+    if not workflow_runs:
+        print("No workflow runs found.")
+        return
 
+    run_ids = [run["id"] for run in workflow_runs]
     all_jobs = []
+
     for index, run_id in enumerate(run_ids):
         print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
