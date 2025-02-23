@@ -28,11 +28,11 @@ def calculate_date_range(duration):
     unit = match.group(2).lower()
 
     # Calculate the date range based on the unit (weeks, months, days)
-    if unit == "w" or unit == "week":
+    if unit in ["w", "week"]:
         start_date = today - timedelta(weeks=number)
-    elif unit == "d" or unit == "day":
+    elif unit in ["d", "day"]:
         start_date = today - timedelta(days=number)
-    elif unit == "m" or unit == "month":
+    elif unit in ["m", "month"]:
         start_date = today - timedelta(days=30 * number)  # Approximate 30 days per month
     else:
         print(f"Unknown unit: {unit}. Defaulting to 1 week.")
@@ -101,20 +101,31 @@ def main():
         print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
         
-        # Calculate the status counts
-        status = jobs_data.get('status', 'Unknown')
+        # Track status for all jobs in the workflow run
+        run_success = True
+        run_failed = False
+        run_in_progress = False
 
-        if status == 'in_progress':
-            total_in_progress += 1
-        elif status == 'failure':
-            total_failed += 1
-        elif status == 'success':  # Track successful runs
-            total_success += 1
+        if 'jobs' in jobs_data:
+            for job in jobs_data['jobs']:
+                job_status = job.get('status', 'Unknown')
+                if job_status == 'in_progress':
+                    run_in_progress = True
+                    total_in_progress += 1
+                elif job_status == 'failure':
+                    run_failed = True
+                    total_failed += 1
+                elif job_status == 'success':
+                    total_success += 1
+
+        # Based on the job statuses, update the overall run status
+        if run_failed:
+            run_success = False
 
         # Print the details of each workflow run
-        created_at = jobs_data.get('created_at', 'N/A')
+        created_at = run.get('created_at', 'N/A')
         print(f"Workflow Run ID: {run_id}")
-        print(f"Status: {status}")
+        print(f"Status: {'Success' if run_success else 'Failure'}")
         print(f"Created at: {created_at}")
 
         all_jobs.append(jobs_data)
