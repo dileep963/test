@@ -9,41 +9,41 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 RUNS_API = os.getenv("RUNS_API")
 JOBS_API = os.getenv("JOBS_API")
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")
-DURATION = os.getenv("DURATION", "1 week")
+DURATION = os.getenv("DURATION", "1w")  # Default to 1 week if not provided
 
 # Function to calculate the date range based on the duration
 def calculate_date_range(duration):
-    today = datetime.today()
-    
-    # Use regular expression to identify the duration type
+    now = datetime.now()
+
+    # Use regular expression to identify the duration type (e.g., "1d", "2w", "1m")
     match = re.match(r"(\d+)([a-zA-Z]+)", duration)
     if not match:
-        print(f"Invalid duration format: {duration}. Defaulting to 1 week.")
-        # Default to 1 week if format is not recognized
-        start_date = today - timedelta(weeks=1)
-        return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
-    
+        print(f"Invalid duration format: {duration}. Defaulting to 1 day.")
+        start_date = now - timedelta(days=1)
+        return start_date.strftime("%Y-%m-%dT%H:%M:%SZ"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # Extract the number and the unit from the input duration
     number = int(match.group(1))
     unit = match.group(2).lower()
 
-    # Calculate the date range based on the unit (weeks, months, days)
-    if unit == "w" or unit == "week":
-        start_date = today - timedelta(weeks=number)
-    elif unit == "d" or unit == "day":
-        start_date = today - timedelta(days=number)
-    elif unit == "m" or unit == "month":
-        start_date = today - timedelta(days=30 * number)  # Approximate 30 days per month
+    # Calculate the date range based on the unit (days, weeks, months)
+    if unit in ["w", "week"]:
+        start_date = now - timedelta(weeks=number)
+    elif unit in ["d", "day"]:
+        start_date = now - timedelta(days=number)
+    elif unit in ["m", "month"]:
+        start_date = now - timedelta(days=30 * number)  # Approximate 30 days per month
     else:
-        print(f"Unknown unit: {unit}. Defaulting to 1 week.")
-        start_date = today - timedelta(weeks=1)
+        print(f"Unknown unit: {unit}. Defaulting to 1 day.")
+        start_date = now - timedelta(days=1)
     
-    return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
+    # Return start and end dates in GitHub API-compatible format (ISO 8601)
+    return start_date.strftime("%Y-%m-%dT%H:%M:%SZ"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-# Get the start and end date based on the duration
+# Get the start and end date based on the duration input
 START_DATE, END_DATE = calculate_date_range(DURATION)
 
-# Print the date range being used
+# Print the date range being used for the API query
 print(f"Fetching workflow runs from {START_DATE} to {END_DATE}")
 
 headers = {
@@ -77,15 +77,25 @@ def main():
 
     all_jobs = []
     for index, run_id in enumerate(run_ids):
-        print(f"Fetching jobs for run ID: {run_id}")
+        print(f"\nFetching jobs for run ID: {run_id}")
+        
+        # Fetch job details for each workflow run
         jobs_data = fetch_jobs_for_run(run_id)
+        
+        # Print the details of each workflow run
+        print(f"Workflow Run ID: {run_id}")
+        print(f"Status: {jobs_data.get('status', 'Unknown')}")
+        print(f"Conclusion: {jobs_data.get('conclusion', 'Unknown')}")
+        print(f"Created at: {jobs_data.get('created_at', 'N/A')}")
+        
+        # Add jobs data to the list
         all_jobs.append(jobs_data)
 
     # Save the output in the specified file
     with open(OUTPUT_FILE, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
-    print(f"All job data stored in {OUTPUT_FILE} successfully.")
+    print(f"\nAll job data stored in {OUTPUT_FILE} successfully.")
 
 if __name__ == "__main__":
     main()
