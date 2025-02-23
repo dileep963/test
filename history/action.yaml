@@ -1,0 +1,38 @@
+name: "Fetch Workflow Jobs"
+description: "Fetches the last 5 workflow runs and their jobs"
+author: "Dileep"
+inputs:
+  github_token:
+    description: "GitHub Token for authentication"
+    required: true
+  runs_api:
+    description: "GitHub API URL to fetch workflow runs"
+    required: true
+    default: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+  jobs_api:
+    description: "GitHub API URL to fetch job details"
+    required: true
+    default: "https://api.github.com/repos/dileep963/test/actions/runs"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Install dependencies
+      run: pip install requests
+      shell: bash
+
+    - name: Execute Python script
+      run: python history.py
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        RUNS_API: ${{ inputs.runs_api }}
+        JOBS_API: ${{ inputs.jobs_api }}
