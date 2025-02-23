@@ -19,8 +19,8 @@ jobs:
               rm -rf final.json
               rm -rf id.txt
               echo "[" > final.json
-              RUNS_API="https://github.com/api/v3/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
-              JOBS_API="https://github.com/api/v3/repos/dileep963/test/actions/runs"
+              RUNS_API="https://api.github.com/api/v3/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+              JOBS_API="https://api.github.com/api/v3/repos/dileep963/test/actions/runs"
               workflow_runs=$(curl -s -L -H "Authorization: Bearer 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" "$RUNS_API")
               echo "$workflow_runs"
               echo "$workflow_runs" | jq -r '.workflow_runs[].id' | tr -d '\r'  >> id.txt
