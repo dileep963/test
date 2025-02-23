@@ -11,3 +11,12 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
             jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
+
+       - name: Run custom action to fetch workflow jobs
+         run: | 
+              ls -altr
+              pwd
+              cat final.json file
+         
+  
+  
