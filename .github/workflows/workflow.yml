@@ -9,7 +9,7 @@ jobs:
          uses: dileep963/test/history@main
          with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+          runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs"
           jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
           duration: "1d"
           output_file: "output.json"
