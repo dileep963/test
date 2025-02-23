@@ -12,7 +12,7 @@ jobs:
             runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
             jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
 
-       - name: Run custom action to fetch workflow jobs
+       - name: file check
          run: | 
               ls -altr
               pwd
