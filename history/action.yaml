@@ -1,6 +1,6 @@
 name: "Fetch Workflow Jobs"
 description: "Fetches the last 5 workflow runs and their jobs"
-author: "Dileep"
+
 inputs:
   github_token:
     description: "GitHub Token for authentication"
@@ -13,6 +13,14 @@ inputs:
     description: "GitHub API URL to fetch job details"
     required: true
     default: "https://api.github.com/repos/dileep963/test/actions/runs"
+  per_page:
+    description: "Number of workflow runs to fetch per page"
+    required: false
+    default: "5"
+  output_file:
+    description: "File to store the final job details"
+    required: false
+    default: "final.json"
 
 runs:
   using: "composite"
@@ -36,3 +44,5 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         RUNS_API: ${{ inputs.runs_api }}
         JOBS_API: ${{ inputs.jobs_api }}
+        PER_PAGE: ${{ inputs.per_page }}
+        OUTPUT_FILE: ${{ inputs.output_file }}
