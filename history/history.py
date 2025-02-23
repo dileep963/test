@@ -109,9 +109,13 @@ def main():
         if 'jobs' in jobs_data:
             for job in jobs_data['jobs']:
                 job_status = job.get('status', 'Unknown')
+                print(f"Job ID: {job['id']} - Status: {job_status}")  # Debugging job status
                 if job_status == 'in_progress':
                     run_in_progress = True
                     total_in_progress += 1
+                elif job_status == 'queued':
+                    print(f"Job {job['id']} is queued")  # Debugging queued jobs
+                    total_in_progress += 1  # Treat queued jobs as in progress
                 elif job_status == 'failure':
                     run_failed = True
                     total_failed += 1
