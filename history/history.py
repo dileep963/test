@@ -2,35 +2,60 @@ import os
 import requests
 import json
 from datetime import datetime, timedelta
-import pytz
+import re
 
 # Read environment variables
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 RUNS_API = os.getenv("RUNS_API")
 JOBS_API = os.getenv("JOBS_API")
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")
+DURATION = os.getenv("DURATION", "1 week")
 
-# Define the timezone for MST (Mountain Standard Time)
-MST = pytz.timezone('US/Mountain')
+# Function to calculate the date range based on the duration
+def calculate_date_range(duration):
+    today = datetime.today()
 
-# Function to fetch workflow runs
-def fetch_workflow_runs():
-    """Fetch workflow runs using the system's current date and time."""
-    current_time = datetime.now(MST)
-    start_date = current_time - timedelta(days=1)  # Last 1 day
-    end_date = current_time  # Current time
-
-    # Format the dates as YYYY-MM-DD
-    start_date_str = start_date.strftime("%Y-%m-%d")
-    end_date_str = end_date.strftime("%Y-%m-%d")
-
-    print(f"Fetching workflow runs from {start_date_str} to {end_date_str}")
-
-    # API call to get workflow runs
-    runs_url = f"{RUNS_API}?per_page=5&created={start_date_str}..{end_date_str}"
-    print(f"Querying URL: {runs_url}")
-    response = requests.get(runs_url, headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"})
+    # Use regular expression to identify the duration type
+    match = re.match(r"(\d+)([a-zA-Z]+)", duration)
+    if not match:
+        print(f"Invalid duration format: {duration}. Defaulting to 1 week.")
+        # Default to 1 week if format is not recognized
+        start_date = today - timedelta(weeks=1)
+        return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
     
+    # Extract the number and the unit from the input duration
+    number = int(match.group(1))
+    unit = match.group(2).lower()
+
+    # Calculate the date range based on the unit (weeks, months, days)
+    if unit == "w" or unit == "week":
+        start_date = today - timedelta(weeks=number)
+    elif unit == "d" or unit == "day":
+        start_date = today - timedelta(days=number)
+    elif unit == "m" or unit == "month":
+        start_date = today - timedelta(days=30 * number)  # Approximate 30 days per month
+    else:
+        print(f"Unknown unit: {unit}. Defaulting to 1 week.")
+        start_date = today - timedelta(weeks=1)
+    
+    return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
+
+# Get the start and end date based on the duration
+START_DATE, END_DATE = calculate_date_range(DURATION)
+
+# Print the date range being used
+print(f"Fetching workflow runs from {START_DATE} to {END_DATE}")
+
+headers = {
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github.v3+json"
+}
+
+def fetch_workflow_runs():
+    """Fetch workflow runs within the specified date range using the range format."""
+    runs_url = f"{RUNS_API}?per_page=5&created={START_DATE}..{END_DATE}"
+    print(f"Querying URL: {runs_url}")
+    response = requests.get(runs_url, headers=headers)
     if response.status_code == 200:
         return response.json().get("workflow_runs", [])
     else:
@@ -39,23 +64,12 @@ def fetch_workflow_runs():
 
 def fetch_jobs_for_run(run_id):
     """Fetch jobs for a given workflow run ID."""
-    response = requests.get(f"{JOBS_API}/{run_id}/jobs", headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"})
+    response = requests.get(f"{JOBS_API}/{run_id}/jobs", headers=headers)
     if response.status_code == 200:
         return response.json()
     else:
         print(f"Error fetching jobs for run {run_id}: {response.status_code} {response.text}")
         return {}
-
-def convert_to_mst(time_str):
-    """Convert UTC time to MST."""
-    try:
-        utc_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ")
-        utc_time = pytz.utc.localize(utc_time)
-        mst_time = utc_time.astimezone(MST)
-        return mst_time.strftime("%Y-%m-%d %H:%M:%S")
-    except Exception as e:
-        print(f"Error converting time: {e}")
-        return time_str
 
 def main():
     """Main function to fetch jobs from workflow runs."""
@@ -88,7 +102,7 @@ def main():
         print(f"Workflow Run ID: {run_id}")
         print(f"Status: {status}")
         print(f"Conclusion: {conclusion}")
-        print(f"Created at: {convert_to_mst(created_at)}")
+        print(f"Created at: {created_at}")
 
         all_jobs.append(jobs_data)
 
