@@ -91,9 +91,9 @@ def main():
         return
 
     total_runs = len(workflow_runs)
+    total_success = 0
     total_failed = 0
     total_in_progress = 0
-    total_success = 0  # To track successful runs
     all_jobs = []
 
     for index, run in enumerate(workflow_runs):
@@ -101,28 +101,37 @@ def main():
         print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
         
-        # Calculate the status counts
-        status = jobs_data.get('status', 'Unknown')
+        # Get the status and conclusion
+        status = run.get('status', 'Unknown')
+        conclusion = run.get('conclusion', 'Unknown')
 
         if status == 'in_progress':
             total_in_progress += 1
-        elif status == 'failure':
+        if conclusion == 'failure':
             total_failed += 1
-        elif status == 'success':  # Track successful runs
+        if conclusion == 'success':
             total_success += 1
 
+        # Get the created_at field
+        created_at = run.get('created_at', 'N/A')
+
         # Print the details of each workflow run
-        created_at = jobs_data.get('created_at', 'N/A')
         print(f"Workflow Run ID: {run_id}")
         print(f"Status: {status}")
+        print(f"Conclusion: {conclusion}")
         print(f"Created at: {created_at}")
 
-        all_jobs.append(jobs_data)
+        all_jobs.append({
+            'run_id': run_id,
+            'status': status,
+            'conclusion': conclusion,
+            'created_at': created_at
+        })
 
     # Print summary of the workflow runs
     print(f"\nSummary of Workflow Runs:")
     print(f"Total Runs: {total_runs}")
-    print(f"Total Success: {total_success}")  # Display successful runs
+    print(f"Total Success: {total_success}")
     print(f"Total Failed: {total_failed}")
     print(f"Total In Progress: {total_in_progress}")
 
