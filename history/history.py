@@ -53,7 +53,7 @@ headers = {
 
 def fetch_workflow_runs():
     """Fetch workflow runs within the specified date range using the range format."""
-    runs_url = f"{RUNS_API}?per_page=5&created={START_DATE}..{END_DATE}"
+    runs_url = f"{RUNS_API}?created={START_DATE}..{END_DATE}"
     print(f"Querying URL: {runs_url}")
     response = requests.get(runs_url, headers=headers)
     if response.status_code == 200:
