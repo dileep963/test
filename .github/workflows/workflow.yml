@@ -8,17 +8,17 @@ jobs:
        - name: Run custom action to fetch workflow jobs
          uses: dileep963/test/history@main
          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
-            jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
-            PER_PAGE: 100
-            OUTPUT_FILE: test.json
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+          jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
+          duration: "1w"
+          output_file: "output.json"
       
        - name: file check
          run: | 
               ls -altr
               pwd
-              cat test.json
+              cat ouput.json
          
   
   
