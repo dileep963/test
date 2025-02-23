@@ -5,49 +5,9 @@ jobs:
   Checkout:
     runs-on: ubuntu-latest
     steps:
-      - name: install jq
-        run: |
-          curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
-          chmod +x jq
-          mkdir -p $HOME/bin
-          mv jq $HOME/bin/
-          echo "$HOME/bin" >> $GITHUB_PATH
-      - name: Publish Artifactory
-        run: |
-              #!/bin/bash
-              jq --version
-              rm -rf final.json
-              rm -rf id.txt
-              echo "[" > final.json
-              RUNS_API="https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
-              JOBS_API="https://api.github.com/repos/dileep963/test/actions/runs"
-              workflow_runs=$(curl -s -L -H "Authorization: Bearer ${{ secrets.TOKEN }}" "$RUNS_API")
-              echo "$workflow_runs"
-              echo "$workflow_runs" | jq -r '.workflow_runs[].id' | tr -d '\r'  >> id.txt
-              cat id.txt
-              #run_count=$(echo "$run_ids" | wc -w)
-              counter=1
-                for RUN_ID in $(cat id.txt); do
-                echo "Fetching jobs for run ID: $RUN_ID"
-                echo "run id is $RUN_ID"
-                if [ "$counter" -gt 1 ]; then
-                echo "," >> final.json
-                fi
-              curl -s -L -H "Authorization: Bearer ${{ secrets.TOKEN }}" "$JOBS_API/$RUN_ID/jobs" >> final.json
-              ((counter++))
-              echo "Jobs for run ID $RUN_ID appended to final.json"
-              done
-              echo "]" >> final.json
-              echo "All job data stored in final.json successfully."
-              pwd
-              ls -altr
-              cat final.json
-
-
-
-
-
-
-
-
-
+       - name: Run custom action to fetch workflow jobs
+         uses: dileep963/test/history@main
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+            jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
