@@ -16,7 +16,7 @@ jobs:
          run: | 
               ls -altr
               pwd
-              cat final.json file
+              cat final.json
          
   
   
