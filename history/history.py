@@ -88,20 +88,18 @@ def main():
         print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
         
-        # Calculate the status counts
-        status = jobs_data.get('status', 'Unknown')
-        conclusion = jobs_data.get('conclusion', 'Unknown')
+        # Get only the status of the workflow run
+        status = run.get('status', 'Unknown')
 
         if status == 'in_progress':
             total_in_progress += 1
-        if conclusion == 'failure':
+        if status == 'failure':
             total_failed += 1
 
         # Print the details of each workflow run
-        created_at = jobs_data.get('created_at', 'N/A')
+        created_at = run.get('created_at', 'N/A')
         print(f"Workflow Run ID: {run_id}")
         print(f"Status: {status}")
-        print(f"Conclusion: {conclusion}")
         print(f"Created at: {created_at}")
 
         all_jobs.append(jobs_data)
