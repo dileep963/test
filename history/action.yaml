@@ -1,6 +1,6 @@
 name: "Fetch Workflow Jobs"
 description: "Fetches the last 5 workflow runs and their jobs"
-
+author: "Dileep"
 inputs:
   github_token:
     description: "GitHub Token for authentication"
@@ -8,19 +8,19 @@ inputs:
   runs_api:
     description: "GitHub API URL to fetch workflow runs"
     required: true
-    default: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
+    default: ""
   jobs_api:
     description: "GitHub API URL to fetch job details"
     required: true
-    default: "https://api.github.com/repos/dileep963/test/actions/runs"
-  per_page:
-    description: "Number of workflow runs to fetch per page"
-    required: false
-    default: "5"
+    default: ""
+  duration:
+    description: "Duration to fetch workflow data (e.g., '1w', '2w', '1m')"
+    required: true
+    default: "1w"   # Default to 1 week if not provided
   output_file:
-    description: "File to store the final job details"
+    description: "The output file to store the job data"
     required: false
-    default: "final.json"
+    default: "final.json"  # Default to "final.json" if not provided
 
 runs:
   using: "composite"
@@ -44,5 +44,5 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         RUNS_API: ${{ inputs.runs_api }}
         JOBS_API: ${{ inputs.jobs_api }}
-        PER_PAGE: ${{ inputs.per_page }}
+        DURATION: ${{ inputs.duration }}
         OUTPUT_FILE: ${{ inputs.output_file }}
