@@ -5,10 +5,6 @@ jobs:
   Checkout:
     runs-on: ubuntu-latest
     steps:
-      # - name: Checkout
-      #   uses: amex-ghactions/checkout@a9e9d74e22a8d1071258458872589b3d54fbb1a4
-      #   with:
-      #     fetch-depth: 0
       - name: install jq
         run: |
           curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
