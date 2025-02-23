@@ -98,7 +98,7 @@ def main():
 
         # Print the details of each workflow run
         created_at = run.get('created_at', 'N/A')
-        print(f"Workflow Run ID: {run_id}")
+        #print(f"Workflow Run ID: {run_id}")
         print(f"Status: {status}")
         print(f"Created at: {created_at}")
 
