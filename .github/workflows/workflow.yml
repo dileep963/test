@@ -11,7 +11,7 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             runs_api: "https://api.github.com/repos/dileep963/test/actions/workflows/manual-trigger.yml/runs?per_page=5"
             jobs_api: "https://api.github.com/repos/dileep963/test/actions/runs"
-            PER_PAGE: 2
+            PER_PAGE: 100
             OUTPUT_FILE: test.json
       
        - name: file check
