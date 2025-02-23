@@ -15,25 +15,21 @@ DURATION = os.getenv("DURATION", "1 week")
 def calculate_date_range(duration):
     today = datetime.today()
 
-    # Use regular expression to identify the duration type
     match = re.match(r"(\d+)([a-zA-Z]+)", duration)
     if not match:
         print(f"Invalid duration format: {duration}. Defaulting to 1 week.")
-        # Default to 1 week if format is not recognized
         start_date = today - timedelta(weeks=1)
         return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
     
-    # Extract the number and the unit from the input duration
     number = int(match.group(1))
     unit = match.group(2).lower()
 
-    # Calculate the date range based on the unit (weeks, months, days)
     if unit == "w" or unit == "week":
         start_date = today - timedelta(weeks=number)
     elif unit == "d" or unit == "day":
         start_date = today - timedelta(days=number)
     elif unit == "m" or unit == "month":
-        start_date = today - timedelta(days=30 * number)  # Approximate 30 days per month
+        start_date = today - timedelta(days=30 * number)
     else:
         print(f"Unknown unit: {unit}. Defaulting to 1 week.")
         start_date = today - timedelta(weeks=1)
@@ -51,29 +47,32 @@ headers = {
     "Accept": "application/vnd.github.v3+json"
 }
 
-def fetch_workflow_runs():
-    """Fetch workflow runs within the specified date range using the range format."""
-    runs_url = f"{RUNS_API}?created={START_DATE}..{END_DATE}"
-    print(f"Querying URL: {runs_url}")
-    response = requests.get(runs_url, headers=headers)
-    if response.status_code == 200:
-        return response.json().get("workflow_runs", [])
-    else:
-        print(f"Error fetching workflow runs: {response.status_code} {response.text}")
-        return []
-
-def fetch_jobs_for_run(run_id):
-    """Fetch jobs for a given workflow run ID."""
-    response = requests.get(f"{JOBS_API}/{run_id}/jobs", headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching jobs for run {run_id}: {response.status_code} {response.text}")
-        return {}
+def fetch_all_workflow_runs():
+    """Fetch all workflow runs within the specified date range, handling pagination."""
+    all_runs = []
+    page = 1
+    while True:
+        runs_url = f"{RUNS_API}?created={START_DATE}..{END_DATE}&page={page}"
+        print(f"Querying URL: {runs_url}")
+        response = requests.get(runs_url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            workflow_runs = data.get("workflow_runs", [])
+            if not workflow_runs:
+                break
+            all_runs.extend(workflow_runs)
+            # Check if there is another page
+            if "next" not in response.links:
+                break
+            page += 1
+        else:
+            print(f"Error fetching workflow runs: {response.status_code} {response.text}")
+            break
+    return all_runs
 
 def main():
     """Main function to fetch jobs from workflow runs."""
-    workflow_runs = fetch_workflow_runs()
+    workflow_runs = fetch_all_workflow_runs()
     if not workflow_runs:
         print("No workflow runs found.")
         return
@@ -87,19 +86,20 @@ def main():
         run_id = run["id"]
         print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
-        
-        # Get only the status of the workflow run
-        status = run.get('status', 'Unknown')
+
+        status = jobs_data.get('status', 'Unknown')
+        conclusion = jobs_data.get('conclusion', 'Unknown')
 
         if status == 'in_progress':
             total_in_progress += 1
-        if status == 'failure':
+        if conclusion == 'failure':
             total_failed += 1
 
         # Print the details of each workflow run
-        created_at = run.get('created_at', 'N/A')
-        #print(f"Workflow Run ID: {run_id}")
+        created_at = jobs_data.get('created_at', 'N/A')
+        print(f"Workflow Run ID: {run_id}")
         print(f"Status: {status}")
+        print(f"Conclusion: {conclusion}")
         print(f"Created at: {created_at}")
 
         all_jobs.append(jobs_data)
