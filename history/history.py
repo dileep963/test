@@ -6,6 +6,8 @@ import json
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 RUNS_API = os.getenv("RUNS_API")
 JOBS_API = os.getenv("JOBS_API")
+PER_PAGE = os.getenv("PER_PAGE", "5")  # Default to 5 if not provided
+OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")  # Default to final.json if not provided
 
 headers = {
     "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -14,7 +16,9 @@ headers = {
 
 def fetch_workflow_runs():
     """Fetch the latest workflow runs."""
-    response = requests.get(RUNS_API, headers=headers)
+    # Modify the API URL to include the per_page parameter
+    runs_url = f"{RUNS_API}&per_page={PER_PAGE}"
+    response = requests.get(runs_url, headers=headers)
     if response.status_code == 200:
         return response.json().get("workflow_runs", [])
     else:
@@ -41,10 +45,11 @@ def main():
         jobs_data = fetch_jobs_for_run(run_id)
         all_jobs.append(jobs_data)
 
-    with open("final.json", "w") as f:
+    # Save the output in the file specified by OUTPUT_FILE
+    with open(OUTPUT_FILE, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
-    print("All job data stored in final.json successfully.")
+    print(f"All job data stored in {OUTPUT_FILE} successfully.")
 
 if __name__ == "__main__":
     main()
