@@ -20,7 +20,7 @@ jobs:
       - name: Define Projects List
         id: set-matrix
         run: |
-          sleep 5 m
+          sleep 5m
           projects='["amp1","amp2","amp3","amp4"]'
           echo "projects=$projects" >> $GITHUB_OUTPUT  # Set output using GITHUB_OUTPUT
 
