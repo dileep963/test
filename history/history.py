@@ -81,6 +81,7 @@ def main():
     total_failed = 0
     total_in_progress = 0
     total_success = 0
+    total_cancelled = 0
     all_jobs = []
 
     for index, run in enumerate(workflow_runs):
@@ -90,6 +91,7 @@ def main():
         
         run_failed = False
         run_in_progress = False
+        run_cancelled = False
         
         if 'jobs' in jobs_data:
             if jobs_data.get("total_count", 0) == 0:
@@ -97,10 +99,15 @@ def main():
             else:
                 for job in jobs_data['jobs']:
                     job_status = job.get('status', 'Unknown')
-                    if job_status == 'in_progress':
+                    job_conclusion = job.get('conclusion', 'Unknown')
+                    if job_status in ['in_progress', 'queued']:
                         run_in_progress = True
-                    elif job_status == 'failure':
+                        print(f"In Progress/Queued Job: {job}")
+                    elif job_conclusion == 'failure':
                         run_failed = True
+                    elif job_conclusion == 'cancelled':
+                        run_cancelled = True
+                        print(f"Cancelled Job: {job}")
                     if 'steps' in job:
                         for step in job['steps']:
                             if step.get('conclusion') == 'failure':
@@ -110,12 +117,14 @@ def main():
             total_failed += 1
         elif run_in_progress:
             total_in_progress += 1
+        elif run_cancelled:
+            total_cancelled += 1
         else:
             total_success += 1
 
         created_at = run.get('created_at', 'N/A')
         print(f"Workflow Run ID: {run_id}")
-        print(f"Status: {'Success' if not run_failed and not run_in_progress else 'Failure' if run_failed else 'In Progress'}")
+        print(f"Status: {'Success' if not run_failed and not run_in_progress and not run_cancelled else 'Failure' if run_failed else 'Cancelled' if run_cancelled else 'In Progress'}")
         print(f"Created at: {created_at}")
 
         all_jobs.append(jobs_data)
@@ -125,6 +134,7 @@ def main():
     print(f"Total Success: {total_success}")
     print(f"Total Failed: {total_failed}")
     print(f"Total In Progress: {total_in_progress}")
+    print(f"Total Cancelled: {total_cancelled}")
 
     with open(OUTPUT_FILE, "w") as f:
         json.dump(all_jobs, f, indent=4)
