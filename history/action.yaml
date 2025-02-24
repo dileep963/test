@@ -33,9 +33,9 @@ runs:
       with:
         python-version: "3.x"
 
-    - name: Install dependencies
-      run: pip install requests
-      shell: bash
+    # - name: Install dependencies
+    #   run: pip install requests
+    #   shell: bash
 
     - name: Execute Python script
       run: python ${{ github.action_path }}/history.py
