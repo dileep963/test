@@ -47,7 +47,6 @@ def fetch_all_workflow_runs():
     page = 1
     while True:
         runs_url = f"{RUNS_API}?created={START_DATE}..{END_DATE}&page={page}"
-        print(f"Querying URL: {runs_url}")
         response = requests.get(runs_url, headers=headers)
         if response.status_code == 200:
             data = response.json()
@@ -86,7 +85,6 @@ def main():
 
     for index, run in enumerate(workflow_runs):
         run_id = run["id"]
-        print(f"Fetching jobs for run ID: {run_id}")
         jobs_data = fetch_jobs_for_run(run_id)
         
         run_failed = False
@@ -102,12 +100,10 @@ def main():
                     job_conclusion = job.get('conclusion', 'Unknown')
                     if job_status in ['in_progress', 'queued']:
                         run_in_progress = True
-                        print(f"In Progress/Queued Job: {job_status}")
                     elif job_conclusion == 'failure':
                         run_failed = True
                     elif job_conclusion == 'cancelled':
                         run_cancelled = True
-                        print(f"Cancelled Job Status: {job_conclusion}")
                     if 'steps' in job:
                         for step in job['steps']:
                             if step.get('conclusion') == 'failure':
