@@ -97,11 +97,14 @@ def main():
             else:
                 for job in jobs_data['jobs']:
                     job_status = job.get('status', 'Unknown')
-
                     if job_status == 'in_progress':
                         run_in_progress = True
                     elif job_status == 'failure':
                         run_failed = True
+                    if 'steps' in job:
+                        for step in job['steps']:
+                            if step.get('conclusion') == 'failure':
+                                run_failed = True
 
         if run_failed:
             total_failed += 1
