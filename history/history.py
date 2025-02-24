@@ -92,13 +92,16 @@ def main():
         run_in_progress = False
         
         if 'jobs' in jobs_data:
-            for job in jobs_data['jobs']:
-                job_status = job.get('status', 'Unknown')
+            if jobs_data.get("total_count", 0) == 0:
+                run_failed = True
+            else:
+                for job in jobs_data['jobs']:
+                    job_status = job.get('status', 'Unknown')
 
-                if job_status == 'in_progress':
-                    run_in_progress = True
-                elif job_status == 'failure':
-                    run_failed = True
+                    if job_status == 'in_progress':
+                        run_in_progress = True
+                    elif job_status == 'failure':
+                        run_failed = True
 
         if run_failed:
             total_failed += 1
