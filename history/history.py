@@ -102,12 +102,12 @@ def main():
                     job_conclusion = job.get('conclusion', 'Unknown')
                     if job_status in ['in_progress', 'queued']:
                         run_in_progress = True
-                        print(f"In Progress/Queued Job: {job}")
+                        print(f"In Progress/Queued Job: {job_status}")
                     elif job_conclusion == 'failure':
                         run_failed = True
                     elif job_conclusion == 'cancelled':
                         run_cancelled = True
-                        print(f"Cancelled Job: {job}")
+                        print(f"Cancelled Job Status: {job_conclusion}")
                     if 'steps' in job:
                         for step in job['steps']:
                             if step.get('conclusion') == 'failure':
