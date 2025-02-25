@@ -119,23 +119,28 @@ def main():
                     # Debugging: Print the job status and conclusion
                     print(f"Job ID: {job.get('id')} - Status: {job_status} - Conclusion: {job_conclusion}")
 
-                    if job_status == 'in_progress' and 'in_progress' not in EXCLUDE_STATUSES:
+                    # Skip the job if it's in the excluded status
+                    if job_status.lower() in EXCLUDE_STATUSES or job_conclusion.lower() in EXCLUDE_STATUSES:
+                        print(f"Skipping Job ID: {job.get('id')} as it matches excluded status.")
+                        continue
+
+                    if job_status == 'in_progress':
                         run_in_progress = True
-                    elif job_conclusion == 'failure' and 'failure' not in EXCLUDE_STATUSES:
+                    elif job_conclusion == 'failure':
                         run_failed = True
-                    elif job_conclusion == 'cancelled' and 'cancelled' not in EXCLUDE_STATUSES:
+                    elif job_conclusion == 'cancelled':
                         run_cancelled = True
-                    elif job_status == 'queued' and 'queued' not in EXCLUDE_STATUSES:
+                    elif job_status == 'queued':
                         run_queued = True
 
         # Count this run if its status is not excluded
-        if run_failed and 'failure' not in EXCLUDE_STATUSES:
+        if run_failed:
             total_failed += 1
-        elif run_in_progress and 'in_progress' not in EXCLUDE_STATUSES:
+        elif run_in_progress:
             total_in_progress += 1
-        elif run_cancelled and 'cancelled' not in EXCLUDE_STATUSES:
+        elif run_cancelled:
             total_cancelled += 1
-        elif run_queued and 'queued' not in EXCLUDE_STATUSES:
+        elif run_queued:
             total_queued += 1
         else:
             total_success += 1
