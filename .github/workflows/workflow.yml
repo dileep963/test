@@ -10,7 +10,7 @@ jobs:
          with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             workflow_name: "manual-trigger.yml"
-            repo: "dileep963/repo"
+            repo: "dileep963/test"
             duration: "1w"
             output_file: "output.json"
             exclude_statuses: "queued,failure"  # Example: excluding queued and failure statuses
