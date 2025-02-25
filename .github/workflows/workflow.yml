@@ -9,8 +9,8 @@ jobs:
          uses: dileep963/test/history@main
          with:
            github_token: ${{ secrets.GITHUB_TOKEN }}
-           repo: 'your_owner/your_repo'
-           workflow_name: 'workflow_name.yml'
+           repo: 'dileep963/test'
+           workflow_name: 'manual-trigger.yml'
            duration: '2w'
            exclude_overall_status: queued
           
