@@ -10,7 +10,7 @@ WORKFLOW_NAME = os.getenv("WORKFLOW_NAME")  # e.g., manual-trigger.yml
 REPO = os.getenv("REPO")  # e.g., dileep963/repo
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")
 DURATION = os.getenv("DURATION", "1 week")
-EXCLUDE_STATUSES = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')  # Convert to lowercase for case insensitivity
+EXCLUDE_STATUSES = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
 
 # Define constant for JOBS_API
 JOBS_API = f"https://api.github.com/repos/{REPO}/actions/runs"
@@ -105,9 +105,8 @@ def main():
                 run_failed = True
             else:
                 for job in jobs_data['jobs']:
-                    job_status = job.get('status', 'Unknown').lower()  # Ensure case-insensitive comparison
-                    job_conclusion = job.get('conclusion', 'Unknown').lower()  # Ensure case-insensitive comparison
-                    # Exclude statuses based on EXCLUDE_STATUSES list (case-insensitive)
+                    job_status = job.get('status', 'Unknown')
+                    job_conclusion = job.get('conclusion', 'Unknown')
                     if job_status in ['in_progress', 'queued'] and job_status not in EXCLUDE_STATUSES:
                         run_in_progress = True
                     elif job_conclusion == 'failure' and 'failure' not in EXCLUDE_STATUSES:
@@ -134,7 +133,7 @@ def main():
 
         created_at = run.get('created_at', 'N/A')
         
-        # Only print status if it's not in the excluded list
+        # Determine the status
         status = "Success" if not run_failed and not run_in_progress and not run_cancelled else (
             "Failure" if run_failed else (
                 "Cancelled" if run_cancelled else (
@@ -143,6 +142,7 @@ def main():
             )
         )
 
+        # Only print status if it's not in the excluded list
         if status.lower() not in EXCLUDE_STATUSES:
             print(f"Workflow Run ID: {run_id}")
             print(f"Status: {status}")
