@@ -99,17 +99,26 @@ def main():
         run_in_progress = False
         run_cancelled = False
         run_queued = False
-        
+
+        # Debugging: Print the status of the workflow run
+        print(f"Run ID: {run_id} - Status: {run.get('status')} - Conclusion: {run.get('conclusion')}")
+
         # Skip this run if its status is in the excluded statuses
-        status = "Unknown"
+        if run.get('status', '').lower() in EXCLUDE_STATUSES:
+            print(f"Skipping run {run_id} due to excluded status {run.get('status')}")
+            continue
+
         if 'jobs' in jobs_data:
             if jobs_data.get("total_count", 0) == 0:
                 run_failed = True
-                status = "Failure"
             else:
                 for job in jobs_data['jobs']:
                     job_status = job.get('status', 'Unknown')
                     job_conclusion = job.get('conclusion', 'Unknown')
+
+                    # Debugging: Print the job status and conclusion
+                    print(f"Job ID: {job.get('id')} - Status: {job_status} - Conclusion: {job_conclusion}")
+
                     if job_status == 'in_progress' and 'in_progress' not in EXCLUDE_STATUSES:
                         run_in_progress = True
                     elif job_conclusion == 'failure' and 'failure' not in EXCLUDE_STATUSES:
@@ -118,15 +127,8 @@ def main():
                         run_cancelled = True
                     elif job_status == 'queued' and 'queued' not in EXCLUDE_STATUSES:
                         run_queued = True
-        
-        # If any status is excluded, skip counting this run entirely
-        if any(status in EXCLUDE_STATUSES for status in ['success', 'failure', 'in_progress', 'cancelled', 'queued']):
-            continue  # Skip this run entirely if it's excluded
-        
+
         # Count this run if its status is not excluded
-        if not any(status in EXCLUDE_STATUSES for status in ['failure', 'in_progress', 'cancelled', 'queued']):
-            total_runs += 1
-        
         if run_failed and 'failure' not in EXCLUDE_STATUSES:
             total_failed += 1
         elif run_in_progress and 'in_progress' not in EXCLUDE_STATUSES:
@@ -138,9 +140,11 @@ def main():
         else:
             total_success += 1
 
-        created_at = run.get('created_at', 'N/A')
+        # If no exclusions were found, count the run
+        if not any(run.get('status', '').lower() in EXCLUDE_STATUSES for status in ['failure', 'in_progress', 'cancelled', 'queued']):
+            total_runs += 1
 
-        # Only print status if it's not in the excluded list
+        created_at = run.get('created_at', 'N/A')
         status = "Success" if not run_failed and not run_in_progress and not run_cancelled else (
             "Failure" if run_failed else (
                 "Cancelled" if run_cancelled else (
@@ -149,6 +153,7 @@ def main():
             )
         )
 
+        # Print status only if it's not in excluded statuses
         if status.lower() not in EXCLUDE_STATUSES:
             print(f"Workflow Run ID: {run_id}")
             print(f"Status: {status}")
@@ -171,6 +176,7 @@ def main():
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
+    # Save all job data
     with open(OUTPUT_FILE, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
