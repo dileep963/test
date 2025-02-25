@@ -23,7 +23,7 @@ inputs:
     description: "Exclude workflow runs based on the overall status (queued, success, failure, cancelled, in_progress)."
     required: false
     default: ''
-    required: false
+
 
 
 runs:
