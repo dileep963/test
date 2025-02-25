@@ -22,8 +22,9 @@ inputs:
   exclude_overall_status:
     description: "Exclude workflow runs based on the overall status (queued, success, failure, cancelled, in_progress)."
     required: false
-    default: []  # Default to no exclusion if not provided
-    type: array
+    default: ''
+    required: false
+
 
 runs:
   using: "composite"
