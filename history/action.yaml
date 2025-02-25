@@ -1,33 +1,33 @@
 name: "Fetch Workflow Jobs"
-description: "Fetches the last 5 workflow runs and their jobs"
+description: "Fetches the last few workflow runs and their jobs based on specified duration and status exclusions."
 author: "Dileep"
 inputs:
   github_token:
     description: "GitHub Token for authentication"
     required: true
-  runs_api:
-    description: "GitHub API URL to fetch workflow runs"
+  repo:
+    description: "GitHub repository in the format owner/repo"
     required: true
-    default: ""
-  jobs_api:
-    description: "GitHub API URL to fetch job details"
+  workflow_name:
+    description: "GitHub workflow file name (e.g., manual-trigger.yml)"
     required: true
-    default: ""
   duration:
     description: "Duration to fetch workflow data (e.g., '1w', '2w', '1m')"
-    required: true
-    default: "1w"   # Default to 1 week if not provided
+    required: false
+    default: "1w"  # Default to 1 week if not provided
   output_file:
     description: "The output file to store the job data"
     required: false
     default: "final.json"  # Default to "final.json" if not provided
+  exclude_overall_status:
+    description: "Exclude workflow runs based on the overall status (queued, success, failure, cancelled, in_progress)."
+    required: false
+    default: []  # Default to no exclusion if not provided
+    type: array
 
 runs:
   using: "composite"
   steps:
-    # - name: Checkout code
-    #   uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -42,7 +42,8 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        RUNS_API: ${{ inputs.runs_api }}
-        JOBS_API: ${{ inputs.jobs_api }}
+        RUNS_API: ${{ format('https://api.github.com/repos/{}/actions/workflows/{}/runs', inputs.repo, inputs.workflow_name) }}
+        JOBS_API: ${{ format('https://api.github.com/repos/{}/actions/runs', inputs.repo) }}
         DURATION: ${{ inputs.duration }}
         OUTPUT_FILE: ${{ inputs.output_file }}
+        EXCLUDE_STATUS: ${{ inputs.exclude_overall_status }}
