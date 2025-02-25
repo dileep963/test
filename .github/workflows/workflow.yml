@@ -8,11 +8,12 @@ jobs:
        - name: Run custom action to fetch workflow jobs
          uses: dileep963/test/history@main
          with:
-           github_token: ${{ secrets.GITHUB_TOKEN }}
-           repo: 'dileep963/test'
-           workflow_name: 'manual-trigger.yml'
-           duration: '2w'
-           exclude_overall_status: queued
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            workflow_name: "manual-trigger.yml"
+            repo: "dileep963/repo"
+            duration: "1d"
+            output_file: "output.json"
+            exclude_statuses: "queued,failure"  # Example: excluding queued and failure statuses
           
        - name: file check
          run: | 
