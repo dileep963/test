@@ -1,30 +1,29 @@
 name: "Fetch Workflow Jobs"
-description: "Fetches the last few workflow runs and their jobs based on specified duration and status exclusions."
+description: "Fetches the last workflow runs and their jobs, with options to exclude specific statuses."
 author: "Dileep"
+
 inputs:
   github_token:
     description: "GitHub Token for authentication"
     required: true
-  repo:
-    description: "GitHub repository in the format owner/repo"
-    required: true
   workflow_name:
-    description: "GitHub workflow file name (e.g., manual-trigger.yml)"
+    description: "Name of the workflow (e.g., manual-trigger.yml)"
+    required: true
+  repo:
+    description: "Repository name (e.g., dileep963/repo)"
     required: true
   duration:
     description: "Duration to fetch workflow data (e.g., '1w', '2w', '1m')"
-    required: false
-    default: "1w"  # Default to 1 week if not provided
+    required: true
+    default: "1w"   # Default to 1 week if not provided
   output_file:
     description: "The output file to store the job data"
     required: false
     default: "final.json"  # Default to "final.json" if not provided
-  exclude_overall_status:
-    description: "Exclude workflow runs based on the overall status (queued, success, failure, cancelled, in_progress)."
+  exclude_statuses:
+    description: "Comma-separated list of statuses to exclude (e.g., 'queued,failure')"
     required: false
-    default: ''
-
-
+    default: ""  # No exclusion by default
 
 runs:
   using: "composite"
@@ -43,8 +42,9 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        RUNS_API: ${{ format('https://api.github.com/repos/{}/actions/workflows/{}/runs', inputs.repo, inputs.workflow_name) }}
-        JOBS_API: ${{ format('https://api.github.com/repos/{}/actions/runs', inputs.repo) }}
+        WORKFLOW_NAME: ${{ inputs.workflow_name }}
+        REPO: ${{ inputs.repo }}
         DURATION: ${{ inputs.duration }}
         OUTPUT_FILE: ${{ inputs.output_file }}
-        EXCLUDE_STATUS: ${{ inputs.exclude_overall_status }}
+        EXCLUDE_STATUSES: ${{ inputs.exclude_statuses }}
+
