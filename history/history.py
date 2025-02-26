@@ -67,16 +67,25 @@ def main():
     parser.add_argument("--repo", required=True, help="GitHub repository (e.g., owner/repo)")
     parser.add_argument("--output_file", default="final.json", help="Output file name (default: final.json)")
     parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
-    parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+   #  parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
-   # Parse arguments
+   # # Parse arguments
+   #  args = parser.parse_args()
+
+   #  exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses.strip() else []
+
+   #  # Print and debug
+   #  print(f"Excluding statuses: {exclude_statuses}")
+    parser.add_argument("--exclude_statuses", nargs="?", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+    
     args = parser.parse_args()
-
-    exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses.strip() else []
-
-    # Print and debug
+    
+    # Handling empty exclude_statuses properly
+    exclude_statuses = [status.strip() for status in args.exclude_statuses.lower().split(',') if status.strip()]
+    
+    # Debug print
     print(f"Excluding statuses: {exclude_statuses}")
-
+    
     jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
     runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
