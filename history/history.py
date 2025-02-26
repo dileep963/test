@@ -67,24 +67,24 @@ def main():
     parser.add_argument("--repo", required=True, help="GitHub repository (e.g., owner/repo)")
     parser.add_argument("--output_file", default="final.json", help="Output file name (default: final.json)")
     parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
-   #  parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+    parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
-   # args = parser.parse_args()
+   # # args = parser.parse_args()
 
-   # exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses.strip() else []
+   # # exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses.strip() else []
 
-   #  print(f"Excluding statuses: {exclude_statuses}")
-    parser.add_argument("--exclude_statuses", type=str, default=None, help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+   # #  print(f"Excluding statuses: {exclude_statuses}")
+   #  parser.add_argument("--exclude_statuses", type=str, default=None, help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
-    # Parse arguments
-    args = parser.parse_args()
+   #  # Parse arguments
+   #  args = parser.parse_args()
 
-    # Handle --exclude_statuses: if it's not provided, set it to an empty list
-    exclude_statuses = []
+   #  # Handle --exclude_statuses: if it's not provided, set it to an empty list
+   #  exclude_statuses = []
 
-    if args.exclude_statuses:
-        # If provided, clean the input (strip and split)
-        exclude_statuses = [status.strip() for status in args.exclude_statuses.split(',') if status.strip()]
+   #  if args.exclude_statuses:
+   #      # If provided, clean the input (strip and split)
+   #      exclude_statuses = [status.strip() for status in args.exclude_statuses.split(',') if status.strip()]
 
     # Debugging output to confirm exclusion list
     print(f"Excluding statuses: {exclude_statuses}")
