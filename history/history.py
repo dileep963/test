@@ -13,7 +13,7 @@ DURATION = os.getenv("DURATION", "1 week")
 EXCLUDE_STATUSES = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
 
 # Construct API URLs
-JOBS_API = f"https://api.github.com/repos/{REPO}/actions/runs/{{run_id}}/jobs"
+JOBS_API = f"https://api.github.com/repos/{REPO}/actions/runs/{{run_id}}/jobs"  # Corrected API URL
 RUNS_API = f"https://api.github.com/repos/{REPO}/actions/workflows/{WORKFLOW_NAME}/runs"
 
 # Function to calculate the date range based on the duration
@@ -64,10 +64,10 @@ def fetch_all_workflow_runs():
     return all_runs
 
 def fetch_jobs_for_run(run_id):
-    jobs_url = JOBS_API.format(run_id=run_id)  # Corrected API URL
+    jobs_url = JOBS_API.format(run_id=run_id)  # Corrected API URL with double curly braces
     response = requests.get(jobs_url, headers=headers)
     if response.status_code == 200:
-        return response.json()
+        return response.json()  # Return the FULL response instead of just "jobs"
     return {}
 
 def main():
@@ -105,7 +105,7 @@ def main():
         total_runs += 1
 
         jobs_data = fetch_jobs_for_run(run_id)
-        all_jobs.append({"run_id": run_id, "jobs": jobs_data.get("jobs", [])})
+        all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})  # Store full jobs API response
 
     # Print summary
     print("\nSummary of Workflow Runs:")
