@@ -23,7 +23,7 @@ inputs:
   exclude_statuses:
     description: "Comma-separated list of statuses to exclude (e.g., 'queued,failure')"
     required: false
-    default: "NOExcluded"  # No exclusion by default
+    default: ""  # No exclusion by default
 
 runs:
   using: "composite"
