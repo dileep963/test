@@ -87,6 +87,11 @@ def main():
         run_id = run["id"]
         run_status = run.get("status", "").lower()
         run_conclusion = run.get("conclusion", "").lower()
+        created_at = run.get("created_at", "")
+
+        print(f"Workflow Run ID: {run_id}")
+        print(f"Status: {run_conclusion.capitalize() if run_conclusion else run_status.capitalize()}")
+        print(f"Created at: {created_at}\n")
 
         if run_conclusion in EXCLUDE_STATUSES:
             continue
