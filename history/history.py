@@ -1,12 +1,13 @@
+import os
 import requests
 import json
 from datetime import datetime, timedelta
 import re
 import argparse
 
-def get_headers():
+def get_headers(github_token):
     return {
-        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
 
@@ -31,12 +32,12 @@ def calculate_date_range(duration):
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
-def fetch_all_workflow_runs(runs_api, start_date, end_date):
+def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token):
     all_runs = []
     page = 1
     while True:
         runs_url = f"{runs_api}?created={start_date}..{end_date}&page={page}"
-        response = requests.get(runs_url, headers=get_headers())
+        response = requests.get(runs_url, headers=get_headers(github_token))
         if response.status_code == 200:
             data = response.json()
             workflow_runs = data.get("workflow_runs", [])
@@ -51,23 +52,23 @@ def fetch_all_workflow_runs(runs_api, start_date, end_date):
             break
     return all_runs
 
-def fetch_jobs_for_run(jobs_api, run_id):
+def fetch_jobs_for_run(jobs_api, run_id, github_token):
     jobs_url = jobs_api.format(run_id=run_id)
-    response = requests.get(jobs_url, headers=get_headers())
+    response = requests.get(jobs_url, headers=get_headers(github_token))
     if response.status_code == 200:
         return response.json()
     print(f"Error fetching jobs for run {run_id}: {response.status_code} - {response.text}")
     return {}
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch GitHub Actions workflow runs and job details.")
-    parser.add_argument("--github_token", required=True, help="GitHub API token")
-    parser.add_argument("--workflow_name", required=True, help="Workflow name")
-    parser.add_argument("--repo", required=True, help="Repository name (owner/repo)")
+    parser = argparse.ArgumentParser(description="Fetch GitHub workflow run history.")
+    parser.add_argument("--github_token", required=True, help="GitHub token for authentication")
+    parser.add_argument("--workflow_name", required=True, help="Name of the GitHub workflow")
+    parser.add_argument("--repo", required=True, help="GitHub repository (e.g., owner/repo)")
     parser.add_argument("--output_file", default="final.json", help="Output file name (default: final.json)")
-    parser.add_argument("--duration", default="1 week", help="Duration for workflow runs (e.g., '1w', '5d', '2m')")
+    parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
     parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
-    
+
     args = parser.parse_args()
 
     jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
@@ -77,7 +78,7 @@ def main():
 
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
-    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date)
+    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, args.github_token)
     if not workflow_runs:
         return
 
@@ -119,7 +120,7 @@ def main():
         
         total_runs += 1
 
-        jobs_data = fetch_jobs_for_run(jobs_api, run_id)
+        jobs_data = fetch_jobs_for_run(jobs_api, run_id, args.github_token)
         all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})
 
     print("\nSummary of Workflow Runs:")
