@@ -86,7 +86,9 @@ def main():
     for run in workflow_runs:
         run_id = run["id"]
         run_status = run.get("status", "").lower()
-        run_conclusion = run.get("conclusion", "").lower()
+        run_conclusion = run.get("conclusion", "")
+        if run_conclusion:
+            run_conclusion = run_conclusion.lower()
         created_at = run.get("created_at", "")
 
         if run_conclusion in EXCLUDE_STATUSES:
