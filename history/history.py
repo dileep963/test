@@ -74,17 +74,21 @@ def main():
    # exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses.strip() else []
 
    #  print(f"Excluding statuses: {exclude_statuses}")
-
-    parser.add_argument("--exclude_statuses", type=str, default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+    parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
     # Parse arguments
     args = parser.parse_args()
 
-    # If exclude_statuses is empty, set it to an empty list
-    exclude_statuses = [status.strip() for status in args.exclude_statuses.split(',') if status.strip()]
+    # Handle exclude_statuses when it's empty
+    exclude_statuses = []
+
+    # Only process exclude_statuses if it's not empty
+    if args.exclude_statuses.strip():  # Check if it's not empty or just whitespace
+        exclude_statuses = [status.strip() for status in args.exclude_statuses.split(',') if status.strip()]
 
     # Debugging output
     print(f"Excluding statuses: {exclude_statuses}")
+
     jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
     runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
