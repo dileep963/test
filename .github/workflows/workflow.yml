@@ -13,7 +13,7 @@ jobs:
             repo: "dileep963/test"
             duration: "1d"
             output_file: "output.json"
-            exclude_statuses: ""  # Example: excluding queued and failure statuses
+            exclude_statuses: "In_progress"  # Example: excluding queued and failure statuses
           
        - name: file check
          run: | 
