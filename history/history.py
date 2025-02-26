@@ -69,14 +69,6 @@ def fetch_all_workflow_runs():
             break
     return all_runs
 
-def fetch_jobs_for_run(run_id):
-    response = requests.get(f"{JOBS_API}/{run_id}/jobs", headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Error fetching jobs for run {run_id}: {response.status_code} {response.text}")
-        return {}
-
 def main():
     workflow_runs = fetch_all_workflow_runs()
     if not workflow_runs:
@@ -89,71 +81,55 @@ def main():
     total_success = 0
     total_cancelled = 0
     total_queued = 0
-    all_jobs = []
+    all_runs = []
 
     for index, run in enumerate(workflow_runs):
         run_id = run["id"]
-        jobs_data = fetch_jobs_for_run(run_id)
-        
-        run_failed = False
-        run_in_progress = False
-        run_cancelled = False
-        run_queued = False
+        run_status = run.get('status', '').lower()
+        run_conclusion = run.get('conclusion', '').lower()
 
         # Debugging: Print the status of the workflow run
-        print(f"Run ID: {run_id} - Status: {run.get('status')} - Conclusion: {run.get('conclusion')}")
+        print(f"Run ID: {run_id} - Status: {run_status} - Conclusion: {run_conclusion}")
 
-        # Skip this run if its status is in the excluded statuses
-        if run.get('status', '').lower() in EXCLUDE_STATUSES:
-            print(f"Skipping run {run_id} due to excluded status {run.get('status')}")
+        # Skip the workflow run if its status is in the excluded statuses
+        if run_status in EXCLUDE_STATUSES or run_conclusion in EXCLUDE_STATUSES:
+            print(f"Skipping workflow run {run_id} due to excluded status {run_status} / {run_conclusion}")
             continue
 
-        if 'jobs' in jobs_data:
-            if jobs_data.get("total_count", 0) == 0:
-                run_failed = True
-            else:
-                for job in jobs_data['jobs']:
-                    job_status = job.get('status', 'Unknown')
-                    job_conclusion = job.get('conclusion', 'Unknown')
-
-                    # Debugging: Print the job status and conclusion
-                    print(f"Job ID: {job.get('id')} - Status: {job_status} - Conclusion: {job_conclusion}")
-
-                    # Skip the job if it's in the excluded status
-                    if job_status.lower() in EXCLUDE_STATUSES or job_conclusion.lower() in EXCLUDE_STATUSES:
-                        print(f"Skipping Job ID: {job.get('id')} as it matches excluded status.")
-                        continue
-
-                    if job_status == 'in_progress':
-                        run_in_progress = True
-                    elif job_conclusion == 'failure':
-                        run_failed = True
-                    elif job_conclusion == 'cancelled':
-                        run_cancelled = True
-                    elif job_status == 'queued':
-                        run_queued = True
-
-        # Count this run if its status is not excluded
-        if run_failed:
+        # If the workflow is marked as 'failure', treat the entire workflow as failed
+        if run_conclusion == 'failure':
             total_failed += 1
-        elif run_in_progress:
-            total_in_progress += 1
-        elif run_cancelled:
-            total_cancelled += 1
-        elif run_queued:
-            total_queued += 1
-        else:
+            print(f"Workflow Run ID {run_id} marked as failed.")
+        
+        # If the workflow is marked as 'success', treat the entire workflow as successful
+        elif run_conclusion == 'success':
             total_success += 1
+            print(f"Workflow Run ID {run_id} marked as successful.")
+        
+        # Handle the 'in_progress' and 'queued' states
+        elif run_status == 'in_progress':
+            total_in_progress += 1
+            print(f"Workflow Run ID {run_id} is in progress.")
+        elif run_status == 'queued':
+            total_queued += 1
+            print(f"Workflow Run ID {run_id} is queued.")
+        
+        # Handle 'cancelled' status
+        elif run_conclusion == 'cancelled':
+            total_cancelled += 1
+            print(f"Workflow Run ID {run_id} was cancelled.")
 
-        # If no exclusions were found, count the run
-        if not any(run.get('status', '').lower() in EXCLUDE_STATUSES for status in ['failure', 'in_progress', 'cancelled', 'queued']):
+        # Count the run if it's not excluded
+        if run_status not in EXCLUDE_STATUSES and run_conclusion not in EXCLUDE_STATUSES:
             total_runs += 1
 
         created_at = run.get('created_at', 'N/A')
-        status = "Success" if not run_failed and not run_in_progress and not run_cancelled else (
-            "Failure" if run_failed else (
-                "Cancelled" if run_cancelled else (
-                    "In Progress" if run_in_progress else "Unknown"
+        status = "Success" if run_conclusion == 'success' else (
+            "Failure" if run_conclusion == 'failure' else (
+                "Cancelled" if run_conclusion == 'cancelled' else (
+                    "In Progress" if run_status == 'in_progress' else (
+                        "Queued" if run_status == 'queued' else "Unknown"
+                    )
                 )
             )
         )
@@ -164,8 +140,8 @@ def main():
             print(f"Status: {status}")
             print(f"Created at: {created_at}")
 
-        # Store jobs in the output file if not excluded
-        all_jobs.append(jobs_data)
+        # Store the workflow run data
+        all_runs.append(run)
 
     # Print summary with excluded statuses in mind
     print(f"\nSummary of Workflow Runs:")
@@ -181,11 +157,11 @@ def main():
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
-    # Save all job data
+    # Save all run data
     with open(OUTPUT_FILE, "w") as f:
-        json.dump(all_jobs, f, indent=4)
+        json.dump(all_runs, f, indent=4)
 
-    print(f"All job data stored in {OUTPUT_FILE} successfully.")
+    print(f"All workflow run data stored in {OUTPUT_FILE} successfully.")
 
 if __name__ == "__main__":
     main()
