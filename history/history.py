@@ -76,12 +76,16 @@ def main():
 
    #  # Print and debug
    #  print(f"Excluding statuses: {exclude_statuses}")
-    parser.add_argument("--exclude_statuses", nargs="?", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
-    
-    args = parser.parse_args()
-    
-    # Handling empty exclude_statuses properly
-    exclude_statuses = [status.strip() for status in args.exclude_statuses.lower().split(',') if status.strip()]
+
+    parser.add_argument(
+    "--exclude_statuses",
+    type=str,
+    default="",
+    help="Comma-separated list of statuses to exclude (e.g., 'success,failure')"
+    )
+
+    exclude_statuses = [status.strip() for status in (args.exclude_statuses or "").lower().split(',') if status.strip()]
+
     
     # Debug print
     print(f"Excluding statuses: {exclude_statuses}")
