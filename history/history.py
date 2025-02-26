@@ -4,16 +4,6 @@ import json
 from datetime import datetime, timedelta
 import re
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-WORKFLOW_NAME = os.getenv("WORKFLOW_NAME")
-REPO = os.getenv("REPO")
-OUTPUT_FILE = os.getenv("OUTPUT_FILE", "final.json")
-DURATION = os.getenv("DURATION", "1 week")
-EXCLUDE_STATUSES = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
-
-JOBS_API = f"https://api.github.com/repos/{REPO}/actions/runs/{{run_id}}/jobs"
-RUNS_API = f"https://api.github.com/repos/{REPO}/actions/workflows/{WORKFLOW_NAME}/runs"
-
 def get_headers():
     return {
         "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
@@ -41,13 +31,12 @@ def calculate_date_range(duration):
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
-START_DATE, END_DATE = calculate_date_range(DURATION)
-
-def fetch_all_workflow_runs():
+def fetch_all_workflow_runs(runs_api, start_date, end_date):
+        print(f"Fetching workflow runs from {start_date} to {end_date}")
     all_runs = []
     page = 1
     while True:
-        runs_url = f"{RUNS_API}?created={START_DATE}..{END_DATE}&page={page}"
+        runs_url = f"{runs_api}?created={start_date}..{end_date}&page={page}"
         response = requests.get(runs_url, headers=get_headers())
         if response.status_code == 200:
             data = response.json()
@@ -63,8 +52,8 @@ def fetch_all_workflow_runs():
             break
     return all_runs
 
-def fetch_jobs_for_run(run_id):
-    jobs_url = JOBS_API.format(run_id=run_id)
+def fetch_jobs_for_run(jobs_api, run_id):
+    jobs_url = jobs_api.format(run_id=run_id)
     response = requests.get(jobs_url, headers=get_headers())
     if response.status_code == 200:
         return response.json()
@@ -72,7 +61,20 @@ def fetch_jobs_for_run(run_id):
     return {}
 
 def main():
-    workflow_runs = fetch_all_workflow_runs()
+    github_token = os.getenv("GITHUB_TOKEN")
+    workflow_name = os.getenv("WORKFLOW_NAME")
+    repo = os.getenv("REPO")
+    output_file = os.getenv("OUTPUT_FILE", "final.json")
+    duration = os.getenv("DURATION", "1 week")
+    exclude_statuses = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
+
+    jobs_api = f"https://api.github.com/repos/{repo}/actions/runs/{{run_id}}/jobs"
+    runs_api = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow_name}/runs"
+
+    start_date, end_date = calculate_date_range(duration)
+    print(f"Fetching workflow runs from {start_date} to {end_date}")
+
+    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date)
     if not workflow_runs:
         return
 
@@ -92,7 +94,7 @@ def main():
             run_conclusion = run_conclusion.lower()
         created_at = run.get("created_at", "")
 
-        if run_conclusion in EXCLUDE_STATUSES:
+        if run_conclusion in exclude_statuses:
             continue
 
         print(f"Workflow Run ID: {run_id}")
@@ -112,23 +114,23 @@ def main():
         
         total_runs += 1
 
-        jobs_data = fetch_jobs_for_run(run_id)
+        jobs_data = fetch_jobs_for_run(jobs_api, run_id)
         all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})
 
     print("\nSummary of Workflow Runs:")
-    if "success" not in EXCLUDE_STATUSES:
+    if "success" not in exclude_statuses:
         print(f"Total Success: {total_success}")
-    if "failure" not in EXCLUDE_STATUSES:
+    if "failure" not in exclude_statuses:
         print(f"Total Failed: {total_failed}")
-    if "in_progress" not in EXCLUDE_STATUSES:
+    if "in_progress" not in exclude_statuses:
         print(f"Total In Progress: {total_in_progress}")
-    if "cancelled" not in EXCLUDE_STATUSES:
+    if "cancelled" not in exclude_statuses:
         print(f"Total Cancelled: {total_cancelled}")
-    if "queued" not in EXCLUDE_STATUSES:
+    if "queued" not in exclude_statuses:
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
-    with open(OUTPUT_FILE, "w") as f:
+    with open(output_file, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
 if __name__ == "__main__":
