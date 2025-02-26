@@ -69,6 +69,7 @@ def main():
     parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
     parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
+   # Parse arguments
     args = parser.parse_args()
 
     # If `exclude_statuses` is provided as an empty string, convert it to an empty list
