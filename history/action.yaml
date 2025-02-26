@@ -37,9 +37,9 @@ runs:
       run: pip install requests
       shell: bash
 
-   - name: Execute Python script
-     shell: bash
-     run: |
+    - name: Execute Python script
+      shell: bash
+      run: |
         python ${{ github.action_path }}/history.py \
           --github_token ${{ secrets.GITHUB_TOKEN }} \
           --workflow_name ${{ inputs.workflow_name }} \
