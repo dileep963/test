@@ -69,10 +69,10 @@ def main():
     parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
     parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
-   # Parse arguments
+    # Parse arguments
     args = parser.parse_args()
 
-    # If `exclude_statuses` is provided as an empty string, convert it to an empty list
+    # If `exclude_statuses` is provided as an empty string, set it to None
     exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else None
 
     # Print and debug
@@ -97,8 +97,6 @@ def main():
     total_queued = 0
     all_jobs = []
 
-    exclude_statuses = args.exclude_statuses.lower().split(',')
-
     for run in workflow_runs:
         run_id = run["id"]
         run_status = run.get("status", "").lower()
@@ -107,7 +105,8 @@ def main():
             run_conclusion = run_conclusion.lower()
         created_at = run.get("created_at", "")
 
-        if run_conclusion in exclude_statuses:
+        # If exclude_statuses is None, don't exclude any statuses
+        if exclude_statuses and run_conclusion in exclude_statuses:
             continue
 
         print(f"Workflow Run ID: {run_id}")
@@ -131,15 +130,15 @@ def main():
         all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})
 
     print("\nSummary of Workflow Runs:")
-    if "success" not in exclude_statuses:
+    if exclude_statuses is None or "success" not in exclude_statuses:
         print(f"Total Success: {total_success}")
-    if "failure" not in exclude_statuses:
+    if exclude_statuses is None or "failure" not in exclude_statuses:
         print(f"Total Failed: {total_failed}")
-    if "in_progress" not in exclude_statuses:
+    if exclude_statuses is None or "in_progress" not in exclude_statuses:
         print(f"Total In Progress: {total_in_progress}")
-    if "cancelled" not in exclude_statuses:
+    if exclude_statuses is None or "cancelled" not in exclude_statuses:
         print(f"Total Cancelled: {total_cancelled}")
-    if "queued" not in exclude_statuses:
+    if exclude_statuses is None or "queued" not in exclude_statuses:
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
