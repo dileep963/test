@@ -32,7 +32,6 @@ def calculate_date_range(duration):
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
 def fetch_all_workflow_runs(runs_api, start_date, end_date):
-        print(f"Fetching workflow runs from {start_date} to {end_date}")
     all_runs = []
     page = 1
     while True:
@@ -72,6 +71,7 @@ def main():
     runs_api = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow_name}/runs"
 
     start_date, end_date = calculate_date_range(duration)
+
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
     workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date)
