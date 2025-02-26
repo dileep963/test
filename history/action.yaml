@@ -40,10 +40,19 @@ runs:
     - name: Execute Python script
       shell: bash
       run: |
-        python ${{ github.action_path }}/history.py \
-          --github_token ${{ inputs.GITHUB_TOKEN }} \
-          --workflow_name ${{ inputs.workflow_name }} \
-          --repo ${{ inputs.repo }} \
-          --output_file ${{ inputs.output_file }} \
-          --duration ${{ inputs.duration }} \
-          --exclude_statuses ${{ inputs.exclude_statuses }}
+        if [ -z "${{ inputs.exclude_statuses }}" ]; then
+          python ${{ github.action_path }}/history.py \
+            --github_token ${{ inputs.github_token }} \
+            --workflow_name ${{ inputs.workflow_name }} \
+            --repo ${{ inputs.repo }} \
+            --output_file ${{ inputs.output_file }} \
+            --duration ${{ inputs.duration }}
+        else
+          python ${{ github.action_path }}/history.py \
+            --github_token ${{ inputs.github_token }} \
+            --workflow_name ${{ inputs.workflow_name }} \
+            --repo ${{ inputs.repo }} \
+            --output_file ${{ inputs.output_file }} \
+            --duration ${{ inputs.duration }} \
+            --exclude_statuses ${{ inputs.exclude_statuses }}
+        fi
