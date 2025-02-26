@@ -1,8 +1,8 @@
-import os
 import requests
 import json
 from datetime import datetime, timedelta
 import re
+import argparse
 
 def get_headers():
     return {
@@ -60,17 +60,20 @@ def fetch_jobs_for_run(jobs_api, run_id):
     return {}
 
 def main():
-    github_token = os.getenv("GITHUB_TOKEN")
-    workflow_name = os.getenv("WORKFLOW_NAME")
-    repo = os.getenv("REPO")
-    output_file = os.getenv("OUTPUT_FILE", "final.json")
-    duration = os.getenv("DURATION", "1 week")
-    exclude_statuses = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
+    parser = argparse.ArgumentParser(description="Fetch GitHub Actions workflow runs and job details.")
+    parser.add_argument("--github_token", required=True, help="GitHub API token")
+    parser.add_argument("--workflow_name", required=True, help="Workflow name")
+    parser.add_argument("--repo", required=True, help="Repository name (owner/repo)")
+    parser.add_argument("--output_file", default="final.json", help="Output file name (default: final.json)")
+    parser.add_argument("--duration", default="1 week", help="Duration for workflow runs (e.g., '1w', '5d', '2m')")
+    parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
+    
+    args = parser.parse_args()
 
-    jobs_api = f"https://api.github.com/repos/{repo}/actions/runs/{{run_id}}/jobs"
-    runs_api = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow_name}/runs"
+    jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
+    runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
-    start_date, end_date = calculate_date_range(duration)
+    start_date, end_date = calculate_date_range(args.duration)
 
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
@@ -85,6 +88,8 @@ def main():
     total_cancelled = 0
     total_queued = 0
     all_jobs = []
+
+    exclude_statuses = args.exclude_statuses.lower().split(',')
 
     for run in workflow_runs:
         run_id = run["id"]
@@ -130,7 +135,7 @@ def main():
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
-    with open(output_file, "w") as f:
+    with open(args.output_file, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
 if __name__ == "__main__":
