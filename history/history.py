@@ -72,8 +72,7 @@ def main():
    # Parse arguments
     args = parser.parse_args()
 
-    # If `exclude_statuses` is provided as an empty string, convert it to an empty list
-    exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else None
+    exclude_statuses = args.exclude_statuses.lower().split(',') if args.exclude_statuses else []
 
     # Print and debug
     print(f"Excluding statuses: {exclude_statuses}")
