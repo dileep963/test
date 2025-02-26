@@ -20,7 +20,7 @@ jobs:
       - name: Define Projects List
         id: set-matrix
         run: |
-          sleep 5m
+          #sleep 5m
           projects='["amp1","amp2","amp3","amp4"]'
           echo "projects=$projects" >> $GITHUB_OUTPUT  # Set output using GITHUB_OUTPUT
 
@@ -33,7 +33,7 @@ jobs:
         zone: [e1, e2]
 
     steps:
-      - name: Print Project and Zone
+      - name: Print Project and Zone ${{ matrix.project }},${{ matrix.zone }}
         run: |
           echo "Project: ${{ matrix.project }} | Zone: ${{ matrix.zone }}"
           echo " ${{ matrix.project }}_${{ matrix.zone }} is creating the file" >> ${{ matrix.project }}_${{ matrix.zone }}.json
