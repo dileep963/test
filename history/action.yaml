@@ -46,4 +46,4 @@ runs:
           --repo ${{ inputs.repo }} \
           --output_file ${{ inputs.output_file }} \
           --duration ${{ inputs.duration }} \
-          ${{ inputs.exclude_statuses != '' && format(' --exclude_statuses {0}', inputs.exclude_statuses) || '' }}
+          ${{ inputs.exclude_statuses != '' && ' --exclude_statuses ' + inputs.exclude_statuses || '' }}
