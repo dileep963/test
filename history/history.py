@@ -1,12 +1,12 @@
+import os
 import requests
 import json
-import argparse
 from datetime import datetime, timedelta
 import re
 
-def get_headers(github_token):
+def get_headers():
     return {
-        "Authorization": f"Bearer {github_token}",
+        "Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
 
@@ -31,12 +31,12 @@ def calculate_date_range(duration):
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
-def fetch_all_workflow_runs(runs_api, start_date, end_date, headers):
+def fetch_all_workflow_runs(runs_api, start_date, end_date):
     all_runs = []
     page = 1
     while True:
         runs_url = f"{runs_api}?created={start_date}..{end_date}&page={page}"
-        response = requests.get(runs_url, headers=headers)
+        response = requests.get(runs_url, headers=get_headers())
         if response.status_code == 200:
             data = response.json()
             workflow_runs = data.get("workflow_runs", [])
@@ -51,34 +51,30 @@ def fetch_all_workflow_runs(runs_api, start_date, end_date, headers):
             break
     return all_runs
 
-def fetch_jobs_for_run(jobs_api, run_id, headers):
+def fetch_jobs_for_run(jobs_api, run_id):
     jobs_url = jobs_api.format(run_id=run_id)
-    response = requests.get(jobs_url, headers=headers)
+    response = requests.get(jobs_url, headers=get_headers())
     if response.status_code == 200:
         return response.json()
     print(f"Error fetching jobs for run {run_id}: {response.status_code} - {response.text}")
     return {}
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch GitHub workflow runs and job details.")
-    parser.add_argument("--github-token", required=True, help="GitHub token for authentication.")
-    parser.add_argument("--workflow-name", required=True, help="The name of the workflow.")
-    parser.add_argument("--repo", required=True, help="Repository name in the format 'owner/repo'.")
-    parser.add_argument("--output-file", default="final.json", help="Output file to store results.")
-    parser.add_argument("--duration", default="1 week", help="Duration for fetching workflow runs.")
-    parser.add_argument("--exclude-statuses", default="", help="Comma separated list of statuses to exclude (e.g., 'success,failure').")
+    github_token = os.getenv("GITHUB_TOKEN")
+    workflow_name = os.getenv("WORKFLOW_NAME")
+    repo = os.getenv("REPO")
+    output_file = os.getenv("OUTPUT_FILE", "final.json")
+    duration = os.getenv("DURATION", "1 week")
+    exclude_statuses = os.getenv("EXCLUDE_STATUSES", "").lower().split(',')
 
-    args = parser.parse_args()
+    jobs_api = f"https://api.github.com/repos/{repo}/actions/runs/{{run_id}}/jobs"
+    runs_api = f"https://api.github.com/repos/{repo}/actions/workflows/{workflow_name}/runs"
 
-    jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
-    runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
-
-    start_date, end_date = calculate_date_range(args.duration)
+    start_date, end_date = calculate_date_range(duration)
 
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
-    headers = get_headers(args.github_token)
-    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, headers)
+    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date)
     if not workflow_runs:
         return
 
@@ -89,8 +85,6 @@ def main():
     total_cancelled = 0
     total_queued = 0
     all_jobs = []
-
-    exclude_statuses = args.exclude_statuses.lower().split(',')
 
     for run in workflow_runs:
         run_id = run["id"]
@@ -120,7 +114,7 @@ def main():
         
         total_runs += 1
 
-        jobs_data = fetch_jobs_for_run(jobs_api, run_id, headers)
+        jobs_data = fetch_jobs_for_run(jobs_api, run_id)
         all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})
 
     print("\nSummary of Workflow Runs:")
@@ -136,7 +130,7 @@ def main():
         print(f"Total Queued: {total_queued}")
     print(f"Total Runs: {total_runs}")
 
-    with open(args.output_file, "w") as f:
+    with open(output_file, "w") as f:
         json.dump(all_jobs, f, indent=4)
 
 if __name__ == "__main__":
