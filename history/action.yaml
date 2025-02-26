@@ -38,13 +38,12 @@ runs:
       shell: bash
 
     - name: Execute Python script
-      run: python ${{ github.action_path }}/history.py
       shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        WORKFLOW_NAME: ${{ inputs.workflow_name }}
-        REPO: ${{ inputs.repo }}
-        DURATION: ${{ inputs.duration }}
-        OUTPUT_FILE: ${{ inputs.output_file }}
-        EXCLUDE_STATUSES: ${{ inputs.exclude_statuses }}
-
+      run: |
+          python ${{ github.action_path }}/history.py \
+                           --github_token ${{ secrets.GITHUB_TOKEN }} \
+                           --workflow_name ${{ inputs.workflow_name }} \
+                           --repo ${{ inputs.repo }} \
+                           --output_file ${{ inputs.output_file }} \
+                           --duration ${{ inputs.duration }} \
+                           --exclude_statuses ${{ inputs.exclude_statuses }}
