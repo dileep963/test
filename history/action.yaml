@@ -37,13 +37,14 @@ runs:
       run: pip install requests
       shell: bash
 
-    - name: Execute Python script
-      shell: bash
-      run: |
-          python ${{ github.action_path }}/history.py \
-                           --github_token $GITHUB_TOKEN \
-                           --workflow_name ${{ inputs.workflow_name }} \
-                           --repo ${{ inputs.repo }} \
-                           --output_file ${{ inputs.output_file }} \
-                           --duration ${{ inputs.duration }} \
-                           --exclude_statuses ${{ inputs.exclude_statuses }}
+   - name: Execute Python script
+     shell: bash
+     run: |
+        python ${{ github.action_path }}/history.py \
+          --github_token ${{ secrets.GITHUB_TOKEN }} \
+          --workflow_name ${{ inputs.workflow_name }} \
+          --repo ${{ inputs.repo }} \
+          --output_file ${{ inputs.output_file }} \
+          --duration ${{ inputs.duration }} \
+          --exclude_statuses ${{ inputs.exclude_statuses }}
+
