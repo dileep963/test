@@ -41,7 +41,7 @@ runs:
       shell: bash
       run: |
         python ${{ github.action_path }}/history.py \
-          --github_token ${{ secrets.GITHUB_TOKEN }} \
+          --github_token ${{ inputs.GITHUB_TOKEN }} \
           --workflow_name ${{ inputs.workflow_name }} \
           --repo ${{ inputs.repo }} \
           --output_file ${{ inputs.output_file }} \
