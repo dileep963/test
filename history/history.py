@@ -77,14 +77,13 @@ def main():
 
    # Parse arguments
     args = parser.parse_args()
-    args.exclude_statuses = args.exclude_statuses or ""
+    exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
 
     # If `exclude_statuses` is provided as an empty string, convert it to an empty list
     #exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
-
-    # Print and debug
     print(f"Excluding statuses: {exclude_statuses}")
 
+    
     jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
     runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
