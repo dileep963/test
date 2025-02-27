@@ -42,9 +42,9 @@ runs:
       run: |
           python ${{ github.action_path }}/history.py \
             --github_token ${{ inputs.github_token }} \
-            --workflow_name "${{ github.event.inputs.workflow_name || '' }}" \
-            --repo "${{ github.event.inputs.repo || '' }}" \
-            --duration "${{ github.event.inputs.duration || '1w' }}" \
-            --output_file "${{ github.event.inputs.output_file || 'final.json' }}" \
-            --exclude_statuses "${{ github.event.inputs.exclude_statuses || '' }}"
+            --workflow_name "${{ github.event.inputs.workflow_name }}" \
+            --repo "${{ github.event.inputs.repo }}" \
+            --duration "${{ github.event.inputs.duration }}" \
+            --output_file "${{ github.event.inputs.output_file }}" \
+            --exclude_statuses "${{ github.event.inputs.exclude_statuses }}"
      
