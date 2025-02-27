@@ -47,7 +47,7 @@ runs:
             # --output_file ${{ inputs.output_file }} \
             # --duration ${{ inputs.duration }} \
             # --exclude_statuses ${{ inputs.exclude_statuses }}
-            -github_token "${{ secrets.GITHUB_TOKEN }}" \
+            --github_token "${{ secrets.GITHUB_TOKEN }}" \
             --workflow_name "${{ github.event.inputs.workflow_name || '' }}" \
             --repo "${{ github.event.inputs.repo || '' }}" \
             --duration "${{ github.event.inputs.duration || '1w' }}" \
