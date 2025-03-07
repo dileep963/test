@@ -32,12 +32,12 @@ def calculate_date_range(duration):
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
-def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclude_statuses):
+def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclude_statuses, headers):
     all_runs = []
     page = 1
     while True:
         runs_url = f"{runs_api}?created={start_date}..{end_date}&page={page}"
-        response = requests.get(runs_url, headers=get_headers(github_token))
+        response = requests.get(runs_url, headers=headers)  # Using the pre-generated headers
         if response.status_code == 200:
             data = response.json()
             workflow_runs = data.get("workflow_runs", [])
@@ -61,9 +61,9 @@ def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclud
             break
     return all_runs
 
-def fetch_jobs_for_run(jobs_api, run_id, github_token):
+def fetch_jobs_for_run(jobs_api, run_id, github_token, headers):
     jobs_url = jobs_api.format(run_id=run_id)
-    response = requests.get(jobs_url, headers=get_headers(github_token))
+    response = requests.get(jobs_url, headers=headers)  # Using the pre-generated headers
     if response.status_code == 200:
         return response.json()
     print(f"Error fetching jobs for run {run_id}: {response.status_code} - {response.text}")
@@ -91,7 +91,10 @@ def main():
 
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
-    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, args.github_token, exclude_statuses)
+    # Call get_headers once outside the loop
+    headers = get_headers(args.github_token)
+
+    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, args.github_token, exclude_statuses, headers)
     if not workflow_runs:
         return
 
@@ -131,10 +134,10 @@ def main():
             total_success += 1
         else:
             total_unknown += 1
-
+        
         total_runs += 1
 
-        jobs_data = fetch_jobs_for_run(jobs_api, run_id, args.github_token)
+        jobs_data = fetch_jobs_for_run(jobs_api, run_id, args.github_token, headers)
         all_jobs.append({"run_id": run_id, "jobs_data": jobs_data})
 
     print("\nSummary of Workflow Runs:")
