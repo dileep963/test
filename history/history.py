@@ -80,13 +80,10 @@ def main():
 
     args = parser.parse_args()
 
-    #exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
     exclude_statuses = [status.strip().lower() for status in args.exclude_statuses.split(',')] if args.exclude_statuses else []
 
     print(f"Excluding statuses: {exclude_statuses}")
 
-    # jobs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
-    # runs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
     jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
     runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
@@ -105,6 +102,7 @@ def main():
     total_cancelled = 0
     total_queued = 0
     total_waiting = 0
+    total_unknown = 0  # Added for unknown status
     all_jobs = []
 
     for run in workflow_runs:
@@ -131,6 +129,10 @@ def main():
             total_waiting += 1
         else:
             total_success += 1
+
+        # Added the condition for unknown status
+        if run_conclusion not in ["failure", "cancelled"] and run_status not in ["queued", "waiting", "in_progress"]:
+            total_unknown += 1
         
         total_runs += 1
 
@@ -150,6 +152,8 @@ def main():
         print(f"Total Queued: {total_queued}")
     if "waiting" not in exclude_statuses:
         print(f"Total Approval/Waiting: {total_waiting}")
+    if total_unknown > 0:
+        print(f"Total Unknown: {total_unknown}")  # Print unknown workflows
     print(f"Total Runs: {total_runs}")
 
     with open(args.output_file, "w") as f:
