@@ -80,7 +80,8 @@ def main():
 
     args = parser.parse_args()
 
-    exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
+    #exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
+    exclude_statuses = [status.strip().lower() for status in args.exclude_statuses.split(',')] if args.exclude_statuses else []
 
     print(f"Excluding statuses: {exclude_statuses}")
 
