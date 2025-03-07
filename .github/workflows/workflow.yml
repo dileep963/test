@@ -12,8 +12,8 @@ jobs:
             workflow_name: "manual-trigger.yml"
             repo: "dileep963/test"
             duration: "1m"
-            #output_file: "output.json"
-            #exclude_statuses: ""  # Example: excluding queued and failure statuses
+            output_file: "output.json"
+            exclude_statuses: "Cancelled"  # Example: excluding queued and failure statuses
           
        - name: file check
          run: | 
