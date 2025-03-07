@@ -32,7 +32,7 @@ def calculate_date_range(duration):
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
 
-def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token):
+def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclude_statuses):
     all_runs = []
     page = 1
     while True:
@@ -43,7 +43,16 @@ def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token):
             workflow_runs = data.get("workflow_runs", [])
             if not workflow_runs:
                 break
-            all_runs.extend(workflow_runs)
+
+            # Pre-exclude workflows based on exclude_statuses
+            filtered_runs = [
+                run for run in workflow_runs
+                if run.get("conclusion", "").lower() not in exclude_statuses and run.get("status", "").lower() not in exclude_statuses
+            ]
+            
+            if filtered_runs:
+                all_runs.extend(filtered_runs)
+            
             if "next" not in response.links:
                 break
             page += 1
@@ -65,33 +74,24 @@ def main():
     parser.add_argument("--github_token", required=True, help="GitHub token for authentication")
     parser.add_argument("--workflow_name", required=True, help="Name of the GitHub workflow")
     parser.add_argument("--repo", required=True, help="GitHub repository (e.g., owner/repo)")
-    parser.add_argument("--output_file", default="final.json", help="Output file name (default: final.json)")
+    parser.add_argument("--output_file", default="output.json", help="Output file name (default: final.json)")
     parser.add_argument("--duration", default="1w", help="Duration for the query (e.g., '1w', '5d', '2m')")
-    # parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
-
-
-    # # Debugging output to confirm exclusion list
-    # print(f"Excluding statuses: {exclude_statuses}")
-
     parser.add_argument("--exclude_statuses", default="", help="Comma-separated list of statuses to exclude (e.g., 'success,failure')")
 
-   # Parse arguments
     args = parser.parse_args()
+
     exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
 
-    # If `exclude_statuses` is provided as an empty string, convert it to an empty list
-    #exclude_statuses = args.exclude_statuses.split(',') if args.exclude_statuses else []
     print(f"Excluding statuses: {exclude_statuses}")
 
-    
-    jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
-    runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
+    jobs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
+    runs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
     start_date, end_date = calculate_date_range(args.duration)
 
     print(f"Fetching workflow runs from {start_date} to {end_date}")
 
-    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, args.github_token)
+    workflow_runs = fetch_all_workflow_runs(runs_api, start_date, end_date, args.github_token, exclude_statuses)
     if not workflow_runs:
         return
 
@@ -101,9 +101,8 @@ def main():
     total_success = 0
     total_cancelled = 0
     total_queued = 0
+    total_waiting = 0
     all_jobs = []
-
-    exclude_statuses = args.exclude_statuses.lower().split(',')
 
     for run in workflow_runs:
         run_id = run["id"]
@@ -112,9 +111,6 @@ def main():
         if run_conclusion:
             run_conclusion = run_conclusion.lower()
         created_at = run.get("created_at", "")
-
-        if run_conclusion in exclude_statuses:
-            continue
 
         print(f"Workflow Run ID: {run_id}")
         print(f"Status: {run_conclusion.capitalize() if run_conclusion else run_status.capitalize()}")
@@ -128,6 +124,8 @@ def main():
             total_cancelled += 1
         elif run_status == "queued":
             total_queued += 1
+        elif run_status == "waiting":
+            total_waiting += 1
         else:
             total_success += 1
         
@@ -147,6 +145,8 @@ def main():
         print(f"Total Cancelled: {total_cancelled}")
     if "queued" not in exclude_statuses:
         print(f"Total Queued: {total_queued}")
+    if "waiting" not in exclude_statuses:
+        print(f"Total Approval/Waiting: {total_waiting}")
     print(f"Total Runs: {total_runs}")
 
     with open(args.output_file, "w") as f:
