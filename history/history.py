@@ -84,8 +84,10 @@ def main():
 
     print(f"Excluding statuses: {exclude_statuses}")
 
-    jobs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
-    runs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
+    # jobs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
+    # runs_api = f"https://github.aexp.com/api/v3/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
+    jobs_api = f"https://api.github.com/repos/{args.repo}/actions/runs/{{run_id}}/jobs"
+    runs_api = f"https://api.github.com/repos/{args.repo}/actions/workflows/{args.workflow_name}/runs"
 
     start_date, end_date = calculate_date_range(args.duration)
 
