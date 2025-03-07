@@ -102,7 +102,7 @@ def main():
     total_cancelled = 0
     total_queued = 0
     total_waiting = 0
-    total_unknown = 0  # Added for unknown status
+    total_unknown = 0
     all_jobs = []
 
     for run in workflow_runs:
@@ -127,13 +127,11 @@ def main():
             total_queued += 1
         elif run_status == "waiting":
             total_waiting += 1
-        else:
+        elif run_status == "success":
             total_success += 1
-
-        # Added the condition for unknown status
-        if run_conclusion not in ["failure", "cancelled"] and run_status not in ["queued", "waiting", "in_progress"]:
+        else:
             total_unknown += 1
-        
+
         total_runs += 1
 
         jobs_data = fetch_jobs_for_run(jobs_api, run_id, args.github_token)
@@ -152,8 +150,7 @@ def main():
         print(f"Total Queued: {total_queued}")
     if "waiting" not in exclude_statuses:
         print(f"Total Approval/Waiting: {total_waiting}")
-    if total_unknown > 0:
-        print(f"Total Unknown: {total_unknown}")  # Print unknown workflows
+    print(f"Total Unknown: {total_unknown}")
     print(f"Total Runs: {total_runs}")
 
     with open(args.output_file, "w") as f:
