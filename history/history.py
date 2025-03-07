@@ -135,7 +135,7 @@ def main():
             total_queued += 1
         elif run_status == "waiting":
             total_waiting += 1
-        elif run_status == "success":
+        elif run_conclusion == "success":
             total_success += 1
         else:
             total_unknown += 1
