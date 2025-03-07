@@ -5,11 +5,13 @@ from datetime import datetime, timedelta
 import re
 import argparse
 
+
 def get_headers(github_token):
     return {
         "Authorization": f"Bearer {github_token}",
         "Accept": "application/vnd.github.v3+json"
     }
+
 
 def calculate_date_range(duration):
     today = datetime.today()
@@ -31,6 +33,7 @@ def calculate_date_range(duration):
         exit(1)
 
     return start_date.strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d")
+
 
 def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclude_statuses, headers):
     all_runs = []
@@ -61,6 +64,7 @@ def fetch_all_workflow_runs(runs_api, start_date, end_date, github_token, exclud
             break
     return all_runs
 
+
 def fetch_jobs_for_run(jobs_api, run_id, github_token, headers):
     jobs_url = jobs_api.format(run_id=run_id)
     response = requests.get(jobs_url, headers=headers)  # Using the pre-generated headers
@@ -68,6 +72,7 @@ def fetch_jobs_for_run(jobs_api, run_id, github_token, headers):
         return response.json()
     print(f"Error fetching jobs for run {run_id}: {response.status_code} - {response.text}")
     return {}
+
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch GitHub workflow run history.")
@@ -158,6 +163,7 @@ def main():
 
     with open(args.output_file, "w") as f:
         json.dump(all_jobs, f, indent=4)
+
 
 if __name__ == "__main__":
     main()
