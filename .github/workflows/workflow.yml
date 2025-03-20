@@ -11,9 +11,9 @@ jobs:
             github_token: ${{ secrets.GITHUB_TOKEN }}
             workflow_name: "manual-trigger.yml"
             repo: "dileep963/test"
-            duration: "1d"
+            duration: "1m"
             output_file: "output.json"
-            exclude_statuses: 'Cancelled'  # Example: excluding queued and failure statuses
+            exclude_statuses: 'Cancelled,waiting'  # Example: excluding queued and failure statuses
           
        - name: file check
          run: | 
